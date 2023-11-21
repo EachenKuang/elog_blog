@@ -12,3 +12,20 @@ modern.jsonp
 resources/sass/.sass-cache/
 resources/.arch-internal-preview.css
 .arch-internal-preview.css
+.elog.env
+elog.config.backup.js
+# macOS
+
+.DS_Store
+
+# Node
+
+node_modules
+
+# IDE
+
+.idea/
+
+.code/
+
+.vscode/
