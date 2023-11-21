@@ -12,9 +12,8 @@ tags:
 summary: ""
 title: Elog+notion持续集成导出MD文件
 status: Published
-cover: "https://image.kuangyichen.com/image/elog%2Bnotion.webp"
 urlname: c366b1ea-ae10-4b95-b3b8-bc49b517487b
-updated: "2023-11-17 10:10:00"
+updated: "2023-11-21 12:37:00"
 ---
 
 # 前言
@@ -126,9 +125,9 @@ elog sync -e .elog.env
 
 **本地效果**【左边为 Notion 数据库部分截图，右边为生成的 MD 文档】：
 
-![202311162036134.webp](https://image.kuangyichen.com/image/202311162036134.webp)
+![](https://image.kuangyichen.com/image/202311162036134.webp)
 
-![202311162034131.png](https://image.kuangyichen.com/image/202311162034131.png)
+![](https://image.kuangyichen.com/image/202311162034131.png)
 
 # 持续集成部署
 
@@ -142,13 +141,13 @@ notion ⇒ slack ⇒ pipedream ⇒ github action
 
 ### 1、注册好之后，创建频道（channel）
 
-![Untitled.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/d57cceec-abea-4500-b629-1f699baed808/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T120354Z&X-Amz-Expires=3600&X-Amz-Signature=25c55835227099dacca96c70b2b6251d906126b4924459a5cd6721dd6b6bfe47&X-Amz-SignedHeaders=host&x-id=GetObject)
+![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/d57cceec-abea-4500-b629-1f699baed808/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=c0a6304c3331c3aadd34982741919f2a9f642bbaf0fe0175d42ead9e217e8d0d&X-Amz-SignedHeaders=host&x-id=GetObject)
 
 ### 2、添加应用 Notion
 
-![Untitled.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/d59711a2-85d7-4c0d-9db5-e3cabdd024e1/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T120354Z&X-Amz-Expires=3600&X-Amz-Signature=1f15d52161b2d2248c80e853796e70856668f1997afef97a31e95db8431221cc&X-Amz-SignedHeaders=host&x-id=GetObject)
+![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/d59711a2-85d7-4c0d-9db5-e3cabdd024e1/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=5da310954e085290ede39ea67da7e979edb84a54df9d5d0ff02a8091128f31ee&X-Amz-SignedHeaders=host&x-id=GetObject)
 
-![Untitled.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/da136fb8-4852-46fe-94e9-13a367699e7c/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T120354Z&X-Amz-Expires=3600&X-Amz-Signature=9e6b3dbc4f7afdd7224c0f672ca0084c4313824e6bd85e6f7e0004e5b0e86a95&X-Amz-SignedHeaders=host&x-id=GetObject)
+![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/da136fb8-4852-46fe-94e9-13a367699e7c/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=d972a4e7aebdfd212cbda9ef58fe39fe7750f60d7e82664ee55331ff8fe3bde8&X-Amz-SignedHeaders=host&x-id=GetObject)
 
 ## notion 设置
 
@@ -156,11 +155,11 @@ notion ⇒ slack ⇒ pipedream ⇒ github action
 
 在数据库页面点击闪电按钮，可以创建 `automation` ，增加触发器以及执行器
 
-![Untitled.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/361acabd-7c2b-4a9e-a26c-ee109bf480cf/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T120354Z&X-Amz-Expires=3600&X-Amz-Signature=038bffc45672c9989036ad159a97a4081fbad728b66a579f38bc130c467487f2&X-Amz-SignedHeaders=host&x-id=GetObject)
+![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/361acabd-7c2b-4a9e-a26c-ee109bf480cf/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=c42bc642b9b55d6db83e895982a7f4e4e9112355015f275d9a446a91559affd0&X-Amz-SignedHeaders=host&x-id=GetObject)
 
 触发器设置为 状态变为 `Published` 触发。因为在 slack 上设置添加了应用 Notion，所以可以在执行器中看到 推送消息至频道，选择好在 Slack 中创建的频道，这里是 notion
 
-![Untitled.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/41e958bc-8b6d-4950-96d0-4dc5981dbc3b/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T120354Z&X-Amz-Expires=3600&X-Amz-Signature=f5c0329120b26a04f24b1c326bab5397f74c34a9760847fe63162c56099160a8&X-Amz-SignedHeaders=host&x-id=GetObject)
+![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/41e958bc-8b6d-4950-96d0-4dc5981dbc3b/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=bee52140d8067f89dfd5d6f1cafcdb40c3710de64fe28e40ca8335b51f370e42&X-Amz-SignedHeaders=host&x-id=GetObject)
 
 ## pipedream 设置
 
@@ -168,29 +167,29 @@ notion ⇒ slack ⇒ pipedream ⇒ github action
 
 ### 2、创建 project
 
-![Untitled.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/b435a34b-dead-41a8-967f-28fc7affff2f/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T120354Z&X-Amz-Expires=3600&X-Amz-Signature=29e35832ccf90e90ac6848864132337105cd127819d28bb63c3c4632d784cbd5&X-Amz-SignedHeaders=host&x-id=GetObject)
+![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/b435a34b-dead-41a8-967f-28fc7affff2f/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=8c8a5889db8221d0646668b1fec48f1d18be4e9778580a71c566dd7e7b727f11&X-Amz-SignedHeaders=host&x-id=GetObject)
 
 ### 3、在 project 下创建 workflow
 
-![Untitled.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/9228da9e-1e24-4aed-9cdf-dfbd67e0a74a/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T120354Z&X-Amz-Expires=3600&X-Amz-Signature=b80f58d8b8c44a0d1f981242938aea7d5e28eda72d66741ba74a749a6ef55288&X-Amz-SignedHeaders=host&x-id=GetObject)
+![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/9228da9e-1e24-4aed-9cdf-dfbd67e0a74a/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=35c94dfc114f66bdcfe505fe208227f6a96a589eb07b3bdf42fe78fb7d30beeb&X-Amz-SignedHeaders=host&x-id=GetObject)
 
 ### 4、设置 workflow
 
 trigger 触发器选择 Slack
 
-![Untitled.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/10cfdbce-2d41-4bea-8fdd-ceee79321d59/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T120354Z&X-Amz-Expires=3600&X-Amz-Signature=798758789f546fe613f3583634c553f7ae56f23482153e247795f3496a14f71b&X-Amz-SignedHeaders=host&x-id=GetObject)
+![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/10cfdbce-2d41-4bea-8fdd-ceee79321d59/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=228e7d011343886f7668408177103302ffbb2b1ca5db21cf293ab0b55ee27b07&X-Amz-SignedHeaders=host&x-id=GetObject)
 
 选择 `New Message In Channels`
 
-![Untitled.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/5c1250e0-809d-430b-80cc-25c3deffc073/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T120354Z&X-Amz-Expires=3600&X-Amz-Signature=257d56e2cdb6fe1bc42e3689fa9a391f1b848f757e08e73da3d5c21bf963d8e1&X-Amz-SignedHeaders=host&x-id=GetObject)
+![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/5c1250e0-809d-430b-80cc-25c3deffc073/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=8bc947763ba2b9f56ff395c390beacb7242e1c9b0619b018707f310fbe2fb2e6&X-Amz-SignedHeaders=host&x-id=GetObject)
 
 按照如下设置
 
-![Untitled.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/94e1fd3b-5637-40fb-927c-6436b782035b/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T120354Z&X-Amz-Expires=3600&X-Amz-Signature=8087593d59c48b7ef23ae254088da9aecfce77ee78474bf39fd0dc758d512a85&X-Amz-SignedHeaders=host&x-id=GetObject)
+![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/94e1fd3b-5637-40fb-927c-6436b782035b/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=67c580ab2719c4aa6b1d6974d7247d926b0b173dcb0da487b01c2b8ee235b802&X-Amz-SignedHeaders=host&x-id=GetObject)
 
 增加一个 Step Python
 
-![Untitled.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/2c83c076-600f-4af0-98af-ae0de5297964/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T120354Z&X-Amz-Expires=3600&X-Amz-Signature=a3ec2f520284163125588ab95253d41887b631b4ffb67d5e719cf684adc8b261&X-Amz-SignedHeaders=host&x-id=GetObject)
+![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/2c83c076-600f-4af0-98af-ae0de5297964/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=57e77b0f3ed01cba35e2ba7c76e9a000f042a74ebcece704cd030bdacabaa0ca&X-Amz-SignedHeaders=host&x-id=GetObject)
 
 按照如下编写即可：
 
@@ -226,7 +225,7 @@ def handler(pd: "pidedream"):
 
 配置环境变量，用于 code 中使用，在环境中通过 `os.environ['your_token']`来使用
 
-![Untitled.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/bcc75a11-13bf-47f2-9922-e88ea235d9f0/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T120354Z&X-Amz-Expires=3600&X-Amz-Signature=49c38edc4c4451c386127612bd693414e89905cedcd1c2753de69835a795b67a&X-Amz-SignedHeaders=host&x-id=GetObject)
+![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/bcc75a11-13bf-47f2-9922-e88ea235d9f0/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=e9eeae201b7f0299d6e4444975e5ef465efd8ce0fbe4b46a7b8cb96f51dad5a7&X-Amz-SignedHeaders=host&x-id=GetObject)
 
 至此，已完成一半的设置。
 
@@ -317,7 +316,13 @@ jobs:
 
 **添加环境变量**：
 
-![Untitled.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/4fee4106-f3b5-49d0-a1b8-8a0d4e679bd0/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T120354Z&X-Amz-Expires=3600&X-Amz-Signature=109cee0fa7a273f3a39cc2cf5a3e58ab95c6d52735e227152fbd3213dfd6873e&X-Amz-SignedHeaders=host&x-id=GetObject)
+![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/4fee4106-f3b5-49d0-a1b8-8a0d4e679bd0/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=75862b4de6c49241cbdd7ce418c5051c82936ac3f48dec557743219cf5fe86d2&X-Amz-SignedHeaders=host&x-id=GetObject)
+
+**增加执行权限：**
+
+`Setting` 下 `Actions` Tab 的 Workflow permissions 需要选中 `Read and write permissions`,否则会报错，没有权限更新。
+
+![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/0c2ecb6d-fbb8-44de-8f67-b10fbbabfe7e/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=d63a949af02f53d00a4d9894e2d4448e9e7a1e9a0e7ca2d0d2eb153635038075&X-Amz-SignedHeaders=host&x-id=GetObject)
 
 ## 执行效果：
 
@@ -325,17 +330,17 @@ jobs:
 
 **Slack:**
 
-![Untitled.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/e5efc5a5-132c-4a20-b64b-ce308723cefc/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T120354Z&X-Amz-Expires=3600&X-Amz-Signature=de21c09aaf02496dbf5caa0454bfe13a634747f28f0023dc68287e6e726acda1&X-Amz-SignedHeaders=host&x-id=GetObject)
+![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/e5efc5a5-132c-4a20-b64b-ce308723cefc/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=2e16a65fa4c0e736e333e8036c058e36cdd34ad5ac7f0af3f990c88024554882&X-Amz-SignedHeaders=host&x-id=GetObject)
 
 **Pipedream:**
 
-![Untitled.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/aaa638ce-ea8a-4213-b940-4fa90e513e47/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T120354Z&X-Amz-Expires=3600&X-Amz-Signature=fcb488f9ca697d5a0f22347a3703fd699cbf093d8df37c151ebd13a1aa50b566&X-Amz-SignedHeaders=host&x-id=GetObject)
+![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/aaa638ce-ea8a-4213-b940-4fa90e513e47/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=8189bf5cf46ea8cb29b72ff26c2f9ee1e073591d1ad68f1cae88b8d7f9855b5a&X-Amz-SignedHeaders=host&x-id=GetObject)
 
 **Github:**
 
-![Untitled.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/2985fb3d-08cc-4617-be3f-5db47f2f298a/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T120354Z&X-Amz-Expires=3600&X-Amz-Signature=cf20bfb05161b33281eb0649b58b182018341403482cd65ca0e7cb52eb2e8061&X-Amz-SignedHeaders=host&x-id=GetObject)
+![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/2985fb3d-08cc-4617-be3f-5db47f2f298a/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=4448daa423b1faad9cd9448bf8cb801bb04f596b6c6d83a7fd0edc3eb61b4950&X-Amz-SignedHeaders=host&x-id=GetObject)
 
-![Untitled.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/949dbf46-9a8d-4637-8c60-e05ef9d3114a/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T120354Z&X-Amz-Expires=3600&X-Amz-Signature=0848e4a20071ddf7bf5c82d51b7152965290254d3864689d04b63d5532ccc5e2&X-Amz-SignedHeaders=host&x-id=GetObject)
+![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/949dbf46-9a8d-4637-8c60-e05ef9d3114a/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=c976a1bad98015bdbe0945b763e452540af7f2bba0b21187065ccd54bb07e706&X-Amz-SignedHeaders=host&x-id=GetObject)
 
 # 关于 Elog
 
@@ -372,32 +377,6 @@ jobs:
 > - Github 图床
 > - 七牛云
 > - 又拍云
-
-    **写作平台：**
-
-    - Notion
-    - 语雀
-    - FlowUs
-    - 飞书云文档
-
-    **博客平台：**
-
-    - Hexo
-    - Vitepress
-    - HuGo
-    - Docusaurus
-    - Docz
-    - Confluence
-    - WordPress
-
-    **支持图床**
-
-    - 本地
-    - 腾讯云COS
-    - 阿里云OSS
-    - Github图床
-    - 七牛云
-    - 又拍云
 
 # 注意事项：
 
@@ -442,9 +421,9 @@ jobs:
 
 在页面下设置 [Personal Access Tokens (Classic) (github.com)](https://github.com/settings/tokens)
 
-![202311171004131.png](https://image.kuangyichen.com/image/202311171004131.png)
+![](https://image.kuangyichen.com/image/202311171004131.png)
 
-![202311171006864.png](https://image.kuangyichen.com/image/202311171006864.png)
+![](https://image.kuangyichen.com/image/202311171006864.png)
 
 # 参考：
 

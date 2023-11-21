@@ -414,7 +414,8 @@
     {
       "id": "c366b1ea-ae10-4b95-b3b8-bc49b517487b",
       "doc_id": "c366b1ea-ae10-4b95-b3b8-bc49b517487b",
-      "updated": 1700187000000,
+      "updated": 1700570220000,
+      "body_original": "\n# 前言\n\n\n截止到现在，已经持续使用了Notion近两年，也基本上将之前在Typora上写的Markdown文章搬运过来了。但是，有个问题，**极端一点思考，如果Notion突然不维护了，那么我的这些数据该怎么办？**\n\n\n尽管，Notion 也提供了导出Markdown格式的功能，但是，只能一个一个导出，后期文档数量上去的话，导出都挺折腾时间的。\n\n\n于是，寻求一种能够批量、快速、自动化导出Notion文章的方法就成了最近关心的事情。好在，在[Matrixcore](https://matrixcore.top/) 的帮助下，发现一件神器 —— [Elog](https://elog.1874.cool/)。\n\n\n使用 Notion+Elog+Slack+Pipedream 这一套组合拳就解决了持续集成的方式来自动化更新Notion文档。\n\n\n# 本地实践开始\n\n\n因为我的主要目的是能够使用 Elog 定时备份 NotionNext下的文档，并且定期归档，所以实践这块以完成持续集成部署为结果展开流程。\n\n\n## 安装依赖\n\n\n参考[快速开始](https://elog.1874.cool/notion/start)\n\n\n前置依赖，需要安装好 [node](https://nodejs.org/en) \n\n\n```shell\n# 使用 npm 安装 CLI\nnpm install @elog/cli -g\n\n# 使用 yarn 安装 CLI\nyarn global add @elog/cli\n\n# 使用 pnpm 安装 CLI\npnpm install @elog/cli -g\n\n# 安装指定版本\nnpm install @elog/cli@0.9.0 -g\n```\n\n\n## 配置Elog\n\n\n在本地目录执行初始化，我这边是在云服务器上，地址为： `/data/server/Myblog_backup`\n\n\n```shell\ncd /data/server/Myblog_backup\nelog init\n```\n\n\n根据提示初始化成功后，会在根目录生成一份 `elog.config.js` 配置文件和本地调试用的`.elog.env`环境变量配置文件。\n\n\n其中 `elog.config.js` 是关键的配置文件，而 `.elog.env` 是用于保存本地关键配置的文件。\n\n\n关于具体参考 [目录结构 | Elog (1874.cool)](https://elog.1874.cool/notion/config-catalog)\n\n\n主要关注以下三个字段的内容：\n\n- write  写作平台详细配置\n- deploy  博客平台详细配置\n- image  图床平台详情配置\n\n我本地的配置是：\n\n\n```javascript\nmodule.exports = {\n\twrite: {\n\t\tplatform: 'notion',\n\t\tnotion: {\n\t\t    token: process.env.NOTION_TOKEN,\n\t\t    databaseId: process.env.NOTION_DATABASE_ID,\n\t\t    filter:  {\n\t\t      property: 'type',\n\t\t      select: {\n\t\t        equals: 'Post'\n\t\t      }\n\t\t    }, \n\t\t    sorts: true, \n\t\t    catalog: {\n\t\t      enable: true,\n\t\t      property: \"category\",\n\t\t    }\n\t\t},\n\t\tdeploy: {\n\t    platform: 'local',\n\t    local: {\n\t      outputDir: './docs',\n\t      filename: 'title',\n\t      format: 'matter-markdown',\n\t      catalog: true,\n\t      formatExt: '',\n\t    },\n\t\t}\n\t\timage: {\n\t    enable: true,\n\t    platform: 'local',\n\t    local: {\n\t      outputDir: './docs/images',\n\t      prefixKey: '/docs/images',\n\t      pathFollowDoc: true,\n\t      imagePathExt: '',\n\t    },\n\t\t}\n}\n```\n\n\n我这边就是需要将 notion 数据库中的 `type` 字段 为 `Post` 的文章导出到 ./docs目录下，Markdown名称以 `title` 字段作为名称，按照 `catalog` 进行文件夹归类。文章的图片下载到本地 `./docs/images` 目录下，并使用相对路径替换掉原始的图片。\n\n\n## 同步\n\n\n```shell\nelog sync -e .elog.env\n```\n\n\n**本地效果**【左边为Notion数据库部分截图，右边为生成的MD文档】：\n\n\n\n![](https://image.kuangyichen.com/image/202311162036134.webp)\n\n\n\n\n![](https://image.kuangyichen.com/image/202311162034131.png)\n\n\n\n\n# 持续集成部署\n\n\n> 🎈 **说了这么多，一直都是本地在操作，如何实现自动化持续集成呢？**\n\n\n需要借助Notion+Slack+Pipedream+GitHub了\n\n\nnotion ⇒ slack ⇒ pipedream ⇒ github action\n\n\n## slack 设置\n\n\n### 1、注册好之后，创建频道（channel）\n\n\n![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/d57cceec-abea-4500-b629-1f699baed808/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=c0a6304c3331c3aadd34982741919f2a9f642bbaf0fe0175d42ead9e217e8d0d&X-Amz-SignedHeaders=host&x-id=GetObject)\n\n\n### 2、添加应用 Notion\n\n\n![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/d59711a2-85d7-4c0d-9db5-e3cabdd024e1/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=5da310954e085290ede39ea67da7e979edb84a54df9d5d0ff02a8091128f31ee&X-Amz-SignedHeaders=host&x-id=GetObject)\n\n\n![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/da136fb8-4852-46fe-94e9-13a367699e7c/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=d972a4e7aebdfd212cbda9ef58fe39fe7750f60d7e82664ee55331ff8fe3bde8&X-Amz-SignedHeaders=host&x-id=GetObject)\n\n\n## notion 设置\n\n\n### 1、创建 automation\n\n\n在数据库页面点击闪电按钮，可以创建 `automation` ，增加触发器以及执行器\n\n\n![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/361acabd-7c2b-4a9e-a26c-ee109bf480cf/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=c42bc642b9b55d6db83e895982a7f4e4e9112355015f275d9a446a91559affd0&X-Amz-SignedHeaders=host&x-id=GetObject)\n\n\n触发器设置为 状态变为 `Published`  触发。因为在slack上设置添加了应用Notion，所以可以在执行器中看到 推送消息至频道，选择好在Slack中创建的频道，这里是 notion\n\n\n![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/41e958bc-8b6d-4950-96d0-4dc5981dbc3b/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=bee52140d8067f89dfd5d6f1cafcdb40c3710de64fe28e40ca8335b51f370e42&X-Amz-SignedHeaders=host&x-id=GetObject)\n\n\n## pipedream 设置\n\n\n### 1、注册\n\n\n### 2、创建 project \n\n\n![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/b435a34b-dead-41a8-967f-28fc7affff2f/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=8c8a5889db8221d0646668b1fec48f1d18be4e9778580a71c566dd7e7b727f11&X-Amz-SignedHeaders=host&x-id=GetObject)\n\n\n### 3、在 project 下创建 workflow\n\n\n![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/9228da9e-1e24-4aed-9cdf-dfbd67e0a74a/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=35c94dfc114f66bdcfe505fe208227f6a96a589eb07b3bdf42fe78fb7d30beeb&X-Amz-SignedHeaders=host&x-id=GetObject)\n\n\n### 4、设置 workflow\n\n\ntrigger 触发器选择 Slack\n\n\n![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/10cfdbce-2d41-4bea-8fdd-ceee79321d59/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=228e7d011343886f7668408177103302ffbb2b1ca5db21cf293ab0b55ee27b07&X-Amz-SignedHeaders=host&x-id=GetObject)\n\n\n选择 `New Message In Channels`\n\n\n![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/5c1250e0-809d-430b-80cc-25c3deffc073/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=8bc947763ba2b9f56ff395c390beacb7242e1c9b0619b018707f310fbe2fb2e6&X-Amz-SignedHeaders=host&x-id=GetObject)\n\n\n按照如下设置\n\n\n![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/94e1fd3b-5637-40fb-927c-6436b782035b/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=67c580ab2719c4aa6b1d6974d7247d926b0b173dcb0da487b01c2b8ee235b802&X-Amz-SignedHeaders=host&x-id=GetObject)\n\n\n增加一个Step Python\n\n\n![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/2c83c076-600f-4af0-98af-ae0de5297964/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=57e77b0f3ed01cba35e2ba7c76e9a000f042a74ebcece704cd030bdacabaa0ca&X-Amz-SignedHeaders=host&x-id=GetObject)\n\n\n按照如下编写即可：\n\n\n```python\nimport os\nimport requests\nimport json\n\n\ndef handler(pd: \"pidedream\"):\n    try:\n\n        token = os.environ['GITHUB_TOKEN']\n        user = \"github_username\"\n        repo = \"github_repo\"\n        event_type = \"deploy\"\n        headers = {\n            \"User-Agent\": \"@elog/serverless-api\",\n            \"Accept\": '*/*',\n            \"Authorization\": f\"token {token}\",\n        }\n        response = requests.post(\n            f\"https://api.github.com/repos/{user}/{repo}/dispatches\",\n            headers=headers,\n            data=json.dumps({\"event_type\": event_type})\n        )\n        # response.raise_for_status()\n        print(response.text, response.json())\n        return {\"message\": response.json() or 'Success!'}\n    except Exception as e:\n        print(e)\n```\n\n\n配置环境变量，用于 code 中使用，在环境中通过 `os.environ['your_token']`来使用\n\n\n![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/bcc75a11-13bf-47f2-9922-e88ea235d9f0/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=e9eeae201b7f0299d6e4444975e5ef465efd8ce0fbe4b46a7b8cb96f51dad5a7&X-Amz-SignedHeaders=host&x-id=GetObject)\n\n\n至此，已完成一半的设置。\n\n\n注意：\n\n\n> ✅ **以下三个变量需要在 GitHub 获取**  \n> **github_username**: 你的github账户名称  \n> **github_repo**：你需要同步的 github 仓库，后续会将生成的markdown推送到这个仓库  \n> **token**：github token \n\n\n## github设置\n\n\n在Github上新建一个仓库，将本地与远程仓库链接上。\n\n\n在 `.github/workflows/`**`main.yaml`** **添加如下**\n\n\n```javascript\nname: Deplo To Github Pages\n\non:\n  # 允许手动push触发\n  push:\n    branches:\n      - master\n  # 允许外部仓库事件触发\n  repository_dispatch:\n    types:\n  # api中的event_type就是这个\n      - deploy\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n\n    steps:\n      - name: 检查分支\n        uses: actions/checkout@master\n\n      - name: 安装node环境\n        uses: actions/setup-node@master\n        with:\n          node-version: \"16.x\"\n\n      - name: 安装依赖\n        run: |\n          export TZ='Asia/Shanghai'\n          npm install --prod\n\n      - name: 拉取语雀/Notion的文章\n        env:\n          # 语雀相关环境变量\n          YUQUE_TOKEN: ${{ secrets.YUQUE_TOKEN }}\n          YUQUE_LOGIN: ${{ secrets.YUQUE_LOGIN }}\n          YUQUE_REPO: ${{ secrets.YUQUE_REPO }}\n          # Notion相关环境变量\n          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}\n          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}\n          # 图床相关环境变量，以腾讯云COS为例\n          COS_SECRET_ID: ${{ secrets.COS_SECRET_ID }}\n          COS_SECRET_KEY: ${{ secrets.COS_SECRET_KEY }}\n          COS_IMAGE_BUCKET: ${{ secrets.COS_IMAGE_BUCKET }}\n          COS_IMAGE_REGION: ${{ secrets.COS_IMAGE_REGION }}\n        run: |\n          # 对应package.json中的script.sync\n          npm run sync\n\n      - name: 配置Git用户名邮箱\n        run: |\n          git config --global user.name \"Eachen\"\n          git config --global user.email \"695089605@qq.com\"\n\n      - name: 提交yuque拉取的文章到GitHub仓库\n        run: |\n          echo `date +\"%Y-%m-%d %H:%M:%S\"` begin > time.txt\n          git add .\n          git commit -m \"更新文档\" -a\n\n      - name: 推送文章到仓库\n        uses: ad-m/github-push-action@master\n        with:\n          github_token: ${{ secrets.GITHUB_TOKEN }}\n\n      - name: 生成静态文件\n        run: |\n          # 对应package.json中的script.build\n          npm run build\n```\n\n\n**添加环境变量**：\n\n\n![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/4fee4106-f3b5-49d0-a1b8-8a0d4e679bd0/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=75862b4de6c49241cbdd7ce418c5051c82936ac3f48dec557743219cf5fe86d2&X-Amz-SignedHeaders=host&x-id=GetObject)\n\n\n**增加执行权限：**\n\n\n`Setting` 下 `Actions` Tab 的 Workflow permissions 需要选中 `Read and write permissions`,否则会报错，没有权限更新。\n\n\n![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/0c2ecb6d-fbb8-44de-8f67-b10fbbabfe7e/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=d63a949af02f53d00a4d9894e2d4448e9e7a1e9a0e7ca2d0d2eb153635038075&X-Amz-SignedHeaders=host&x-id=GetObject)\n\n\n## 执行效果：\n\n\n当在Notion数据库中，将文章的状态从 `Draft` 转为 `Published` ，随即触发执行\n\n\n**Slack:**\n\n\n![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/e5efc5a5-132c-4a20-b64b-ce308723cefc/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=2e16a65fa4c0e736e333e8036c058e36cdd34ad5ac7f0af3f990c88024554882&X-Amz-SignedHeaders=host&x-id=GetObject)\n\n\n**Pipedream:**\n\n\n![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/aaa638ce-ea8a-4213-b940-4fa90e513e47/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=8189bf5cf46ea8cb29b72ff26c2f9ee1e073591d1ad68f1cae88b8d7f9855b5a&X-Amz-SignedHeaders=host&x-id=GetObject)\n\n\n**Github:**\n\n\n![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/2985fb3d-08cc-4617-be3f-5db47f2f298a/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=4448daa423b1faad9cd9448bf8cb801bb04f596b6c6d83a7fd0edc3eb61b4950&X-Amz-SignedHeaders=host&x-id=GetObject)\n\n\n![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/949dbf46-9a8d-4637-8c60-e05ef9d3114a/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=c976a1bad98015bdbe0945b763e452540af7f2bba0b21187065ccd54bb07e706&X-Amz-SignedHeaders=host&x-id=GetObject)\n\n\n# 关于Elog\n\n\n## 什么是Elog\n\n\n> `Elog`名为 `Easy Blogging`，简单、轻松的书写&部署博客  \n> 它是一种开放式跨端博客解决方案，随意组合写作平台（语雀/飞书/Notion/FlowUs）和博客平台（Hexo/Vitepress/Confluence/WordPress）等\n\n\n用我的话来说，就是Elog支持从多个**写作平台**中导出Markdown文件格式，然后生成不同**博客平台**的静态博客文件部署。就是方便不懂技术的小伙伴也能在不同的写作平台以及博客平台自由切换，体验一条龙服务。\n\n\n> 💡 Elog支持的写作平台与博客平台  \n> **写作平台：**  \n>   \n> - Notion  \n>   \n> - 语雀  \n>   \n> - FlowUs  \n>   \n> - 飞书云文档  \n>   \n> **博客平台：**  \n>   \n> - Hexo  \n>   \n> - Vitepress  \n>   \n> - HuGo  \n>   \n> - Docusaurus  \n>   \n> - Docz  \n>   \n> - Confluence  \n>   \n> - WordPress  \n>   \n> **支持图床**  \n>   \n> - 本地  \n>   \n> - 腾讯云COS  \n>   \n> - 阿里云OSS  \n>   \n> - Github图床  \n>   \n> - 七牛云  \n>   \n> - 又拍云\n\n\n# 注意事项：\n\n\n> ❓ 【github】如何将本地仓库与远程仓库建立连接\n\n- 【**空仓库】创建完空仓库就将本地项目关联到远程**\n\t1. **如果本地项目已经通过git管理：**\n\n\t\t```shell\n\t\tgit remote add origin\n\t\tgit push -u origin master\n\t\t```\n\n\t2. **本地项目未通过git管理：**\n\n\t\t```shell\n\t\t# (将项目通过git初始化)\n\t\tgit init\n\t\t# (添加所有修改到暂存区)\n\t\tgit add .\n\t\t# (提交commit)\n\t\tgit commit -m \"first commit remark\"\n\t\t# 与远程仓库地址建立连接\n\t\tgit remote add origin [仓库地址]\n\t\t# (推送到远程github)\n\t\tgit push -u origin master\n\t\t```\n\n- 【**非空仓库】创建完非空仓库就将本地项目关联到远程**\n\t1. 远程非空仓库的关联，就要涉及到2个不同项目的关联了；得先将远程的代码合并下来，才能提交；我们先假设项目已经通过git管理了。缺少关联push远程仓库的步骤讲：\n\n\t\t```shell\n\t\t# 与远程仓库地址建立连接\n\t\tgit remote add origin [仓库地址]\n\t\t# 让两个不同项目的没关联提交允许拉取合并\n\t\tgit pull origin master --allow-unrelated-histories\n\t\t```\n\n\n> ❓ 【github】如何获取 github token\n\n\n在页面下设置 [Personal Access Tokens (Classic) (github.com)](https://github.com/settings/tokens)\n\n\n![](https://image.kuangyichen.com/image/202311171004131.png)\n\n\n![](https://image.kuangyichen.com/image/202311171006864.png)\n\n\n# 参考：\n\n\n[Elog 介绍 | Elog 文档 (1874.cool)](https://elog.1874.cool/)\n\n\n[[跨域协同] elog+notion实现md优雅备份 | MatrixCore](https://matrixcore.top/article/elog)\n\n\n[https://pipedream.com/](https://pipedream.com/)\n\n",
       "properties": {
         "password": "",
         "icon": "",
@@ -430,9 +431,8 @@
         "summary": "",
         "title": "Elog+notion持续集成导出MD文件",
         "status": "Published",
-        "cover": "https://image.kuangyichen.com/image/elog%2Bnotion.webp",
         "urlname": "c366b1ea-ae10-4b95-b3b8-bc49b517487b",
-        "updated": "2023-11-17 10:10:00"
+        "updated": "2023-11-21 12:37:00"
       },
       "catalog": [
         {
@@ -3222,9 +3222,91 @@
       "body": "",
       "realName": "【笔记】MySQL必知必会",
       "relativePath": "/学习笔记/【笔记】MySQL必知必会.md"
+    },
+    {
+      "id": "ca64831c-9fae-4a56-af56-14cf15a04af4",
+      "doc_id": "ca64831c-9fae-4a56-af56-14cf15a04af4",
+      "updated": 1700571480000,
+      "body_original": "\n# 整理定义\n\n\n中文名称：自适应哈希索引\n\n\n英文名称：**Adaptive Hash Index（AHI）**\n\n\n![](https://image.kuangyichen.com/image/innodb-architecture-8-0.png)\n\n\n**自适应哈希索引（Adaptive Hash Index）**使 InnoDB 能够在具有适当的工作负载组合和足够的缓冲池内存的系统上执行更像内存数据库的操作，而无需牺牲事务功能或可靠性。 \n\n\n# 复述展开\n\n\n根据观察到的搜索模式，使用索引键的前缀构建哈希索引。 前缀可以是任意长度，并且可能只有B树中的某些值出现在哈希索引中。 哈希索引是根据需要为经常访问的索引页构建的。\n\n\n如果表几乎完全适合主内存，则哈希索引可以通过直接查找任何元素、将索引值转换为某种指针来加速查询。 InnoDB有一个监控索引搜索的机制。 如果 InnoDB 发现查询可以从构建哈希索引中受益，它会自动执行此操作。\n\n\n## 何时应该启用或者禁用？\n\n\n对于某些工作负载，哈希索引查找所带来的加速远远超过了监视索引查找和维护哈希索引结构的额外工作。 在繁重的工作负载（例如多个并发联接）下，对自适应哈希索引的访问有时会成为争用的根源。 使用 LIKE 运算符和 % 通配符的查询往往也不会受益。 对于无法从自适应哈希索引中受益的工作负载，将其关闭可以减少不必要的性能开销。 由于很难提前预测自适应哈希索引是否适合特定系统和工作负载，可以在启用和禁用它的情况下**运行基准测试**。\n\n\n## 相关配置\n\n- **innodb_adaptive_hash_index**\n\n\t自适应哈希索引由 `innodb_adaptive_hash_index` 变量启用，或在服务器启动时通过 `--skip-innodb-adaptive-hash-index` 关闭。**默认为开启**。\n\n- **innodb_adaptive_hash_index_parts**\n\n\t自适应哈希索引特征是<u>分区</u>的。 每个索引都绑定到一个特定的分区，并且每个分区都由单独的锁存器保护。 分区由 `innodb_adaptive_hash_index_parts` 变量控制。 `innodb_adaptive_hash_index_parts` 变量默认值为 8。 最大设置为 512。\n\n\n## 如何监控\n\n\n监控**自适应哈希索引（Adaptive Hash Index）**的使用情况：你可以通过`SHOW ENGINE INNODB STATUS`命令来查看AHI的使用情况，包括哈希索引的数量，哈希索引的大小等。这可以帮助你更好地理解和配置AHI。\n\n\n# 理解体会\n\n\nInnoDB的自适应哈希索引（Adaptive Hash Index，AHI）是一种特殊的索引，它是InnoDB存储引擎为了提高查询性能而设计的。当某些索引值被频繁地访问时，InnoDB会自动创建哈希索引，以加速对这些索引值的查询。这种索引是自适应的，因为它会根据数据库的实际访问模式动态地创建和删除。\n\n\nAHI的主要优点是可以显著提高查询性能，特别是在大量的点查询（即查询单个索引值）和等值查询（即查询索引值等于某个常量的记录）的场景下。然而，AHI也有一些缺点。首先，AHI会占用一部分内存，如果内存资源有限，可能会影响其他功能的性能。其次，AHI的创建和删除需要一定的CPU资源，如果CPU资源有限，可能会影响数据库的性能。\n\n\n总的来说，AHI是InnoDB的一个强大的功能，可以显著提高查询性能。但是，使用AHI需要一定的专业知识，如果配置不当，可能会影响数据库的性能和稳定性。因此，我们在使用AHI时，需要谨慎小心。\n\n\n# 参考：\n\n\n[MySQL :: MySQL 8.0 Reference Manual :: 15.5.3 Adaptive Hash Index](https://dev.mysql.com/doc/refman/8.0/en/innodb-adaptive-hash.html)\n\n\n[MySQL :: MySQL 8.0 Reference Manual :: 8.3.9 Comparison of B-Tree and Hash Indexes](https://dev.mysql.com/doc/refman/8.0/en/index-btree-hash.html)\n\n",
+      "properties": {
+        "password": "",
+        "icon": "",
+        "date": "2023-11-21",
+        "type": "Post",
+        "category": "行业概念",
+        "slug": "industry-day61",
+        "tags": [
+          "行业概念",
+          "文字",
+          "思考"
+        ],
+        "summary": "",
+        "title": "Day61【概念解析】InnoDB AHI",
+        "status": "Published",
+        "urlname": "ca64831c-9fae-4a56-af56-14cf15a04af4",
+        "updated": "2023-11-21 12:58:00"
+      },
+      "catalog": [
+        {
+          "title": "行业概念",
+          "doc_id": "ca64831c-9fae-4a56-af56-14cf15a04af4"
+        }
+      ],
+      "body": "",
+      "realName": "Day61【概念解析】InnoDB AHI",
+      "relativePath": "/行业概念/Day61【概念解析】InnoDB AHI.md"
     }
   ],
   "catalog": [
+    {
+      "object": "page",
+      "id": "ca64831c-9fae-4a56-af56-14cf15a04af4",
+      "created_time": "2023-11-21T12:56:00.000Z",
+      "last_edited_time": "2023-11-21T12:58:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
+      },
+      "cover": {
+        "type": "external",
+        "external": {
+          "url": "https://image.kuangyichen.com/image/InnoDB%20Adaptive%20Hash%20Index.webp"
+        }
+      },
+      "icon": {
+        "type": "emoji",
+        "emoji": "🗒️"
+      },
+      "parent": {
+        "type": "database_id",
+        "database_id": "cd6c4967-e5fe-45d2-976d-5d46736ada90"
+      },
+      "archived": false,
+      "properties": {
+        "password": "",
+        "icon": "",
+        "date": "2023-11-21",
+        "type": "Post",
+        "category": "行业概念",
+        "slug": "industry-day61",
+        "tags": [
+          "行业概念",
+          "文字",
+          "思考"
+        ],
+        "summary": "",
+        "title": "Day61【概念解析】InnoDB AHI",
+        "status": "Published",
+        "urlname": "ca64831c-9fae-4a56-af56-14cf15a04af4",
+        "updated": "2023-11-21 12:58:00"
+      },
+      "url": "https://www.notion.so/Day61-InnoDB-AHI-ca64831c9fae4a56af5614cf15a04af4",
+      "public_url": "https://eachenkuang.notion.site/Day61-InnoDB-AHI-ca64831c9fae4a56af5614cf15a04af4"
+    },
     {
       "object": "page",
       "id": "9d0ce237-43af-4dce-8f99-4f86a900b26e",
@@ -3882,7 +3964,7 @@
       "object": "page",
       "id": "c366b1ea-ae10-4b95-b3b8-bc49b517487b",
       "created_time": "2023-11-09T07:24:00.000Z",
-      "last_edited_time": "2023-11-17T02:10:00.000Z",
+      "last_edited_time": "2023-11-21T12:37:00.000Z",
       "created_by": {
         "object": "user",
         "id": "730822a3-a39d-4313-aff9-f18324e745dd"
@@ -3922,7 +4004,7 @@
         "title": "Elog+notion持续集成导出MD文件",
         "status": "Published",
         "urlname": "c366b1ea-ae10-4b95-b3b8-bc49b517487b",
-        "updated": "2023-11-17 02:10:00"
+        "updated": "2023-11-21 12:37:00"
       },
       "url": "https://www.notion.so/Elog-notion-MD-c366b1eaae104b95b3b8bc49b517487b",
       "public_url": "https://eachenkuang.notion.site/Elog-notion-MD-c366b1eaae104b95b3b8bc49b517487b"
@@ -4192,8 +4274,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/86f96968-f617-4740-a539-e383d7d7f980/jon-tyson-P2aOvMMUJnY-unsplash.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T123515Z&X-Amz-Expires=3600&X-Amz-Signature=24885d38d0bc922eb088fde86d0650b7655ca833e88fd3057b5c0391141bd333&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-21T13:35:15.306Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/86f96968-f617-4740-a539-e383d7d7f980/jon-tyson-P2aOvMMUJnY-unsplash.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=83e76e435662c8e19b0c3a15d699da3038f960efc1f3a653023a8c8012f75d96&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-21T14:01:26.015Z"
         }
       },
       "icon": {
@@ -5088,8 +5170,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/85f6c012-2895-49af-99a2-3e005710adbc/cover_%281%29.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T123515Z&X-Amz-Expires=3600&X-Amz-Signature=79ed09b5ad424f815ae01c111320c0a88e44c9e975676f56ad65ebdbfbf3ad15&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-21T13:35:15.308Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/85f6c012-2895-49af-99a2-3e005710adbc/cover_%281%29.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=743043a3c3c1dc757f9f8e76018d9ce869a1232c684e94f3e6239714fa7fc43f&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-21T14:01:26.016Z"
         }
       },
       "icon": {
@@ -6908,8 +6990,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T123515Z&X-Amz-Expires=3600&X-Amz-Signature=65c5b097c8b2e800bc4c20c785d250138c9b345862285940bb030dd67a6d45de&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-21T13:35:15.315Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=2f7dea0e774b42881c43a3e31e3d1afdc882543bb25f2c385d528b9b7907a2c7&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-21T14:01:26.003Z"
         }
       },
       "icon": {
@@ -6959,8 +7041,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T123515Z&X-Amz-Expires=3600&X-Amz-Signature=65c5b097c8b2e800bc4c20c785d250138c9b345862285940bb030dd67a6d45de&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-21T13:35:15.315Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=2f7dea0e774b42881c43a3e31e3d1afdc882543bb25f2c385d528b9b7907a2c7&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-21T14:01:26.004Z"
         }
       },
       "icon": {
@@ -7009,8 +7091,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T123515Z&X-Amz-Expires=3600&X-Amz-Signature=65c5b097c8b2e800bc4c20c785d250138c9b345862285940bb030dd67a6d45de&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-21T13:35:15.322Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=2f7dea0e774b42881c43a3e31e3d1afdc882543bb25f2c385d528b9b7907a2c7&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-21T14:01:26.004Z"
         }
       },
       "icon": {
@@ -7059,8 +7141,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T123515Z&X-Amz-Expires=3600&X-Amz-Signature=65c5b097c8b2e800bc4c20c785d250138c9b345862285940bb030dd67a6d45de&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-21T13:35:15.315Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=2f7dea0e774b42881c43a3e31e3d1afdc882543bb25f2c385d528b9b7907a2c7&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-21T14:01:26.005Z"
         }
       },
       "icon": {
@@ -7109,8 +7191,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T123515Z&X-Amz-Expires=3600&X-Amz-Signature=65c5b097c8b2e800bc4c20c785d250138c9b345862285940bb030dd67a6d45de&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-21T13:35:15.316Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=2f7dea0e774b42881c43a3e31e3d1afdc882543bb25f2c385d528b9b7907a2c7&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-21T14:01:26.005Z"
         }
       },
       "icon": {
@@ -7159,8 +7241,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T123515Z&X-Amz-Expires=3600&X-Amz-Signature=65c5b097c8b2e800bc4c20c785d250138c9b345862285940bb030dd67a6d45de&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-21T13:35:15.316Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=2f7dea0e774b42881c43a3e31e3d1afdc882543bb25f2c385d528b9b7907a2c7&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-21T14:01:26.006Z"
         }
       },
       "icon": {
@@ -7209,8 +7291,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T123515Z&X-Amz-Expires=3600&X-Amz-Signature=65c5b097c8b2e800bc4c20c785d250138c9b345862285940bb030dd67a6d45de&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-21T13:35:15.316Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=2f7dea0e774b42881c43a3e31e3d1afdc882543bb25f2c385d528b9b7907a2c7&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-21T14:01:26.006Z"
         }
       },
       "icon": {
@@ -7259,8 +7341,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T123515Z&X-Amz-Expires=3600&X-Amz-Signature=65c5b097c8b2e800bc4c20c785d250138c9b345862285940bb030dd67a6d45de&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-21T13:35:15.316Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=2f7dea0e774b42881c43a3e31e3d1afdc882543bb25f2c385d528b9b7907a2c7&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-21T14:01:26.007Z"
         }
       },
       "icon": {
@@ -7309,8 +7391,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T123515Z&X-Amz-Expires=3600&X-Amz-Signature=65c5b097c8b2e800bc4c20c785d250138c9b345862285940bb030dd67a6d45de&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-21T13:35:15.323Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=2f7dea0e774b42881c43a3e31e3d1afdc882543bb25f2c385d528b9b7907a2c7&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-21T14:01:26.007Z"
         }
       },
       "icon": {
@@ -7359,8 +7441,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T123515Z&X-Amz-Expires=3600&X-Amz-Signature=65c5b097c8b2e800bc4c20c785d250138c9b345862285940bb030dd67a6d45de&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-21T13:35:15.317Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=2f7dea0e774b42881c43a3e31e3d1afdc882543bb25f2c385d528b9b7907a2c7&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-21T14:01:26.008Z"
         }
       },
       "icon": {
@@ -7409,8 +7491,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T123515Z&X-Amz-Expires=3600&X-Amz-Signature=65c5b097c8b2e800bc4c20c785d250138c9b345862285940bb030dd67a6d45de&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-21T13:35:15.317Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=2f7dea0e774b42881c43a3e31e3d1afdc882543bb25f2c385d528b9b7907a2c7&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-21T14:01:26.020Z"
         }
       },
       "icon": {
@@ -7459,8 +7541,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T123515Z&X-Amz-Expires=3600&X-Amz-Signature=65c5b097c8b2e800bc4c20c785d250138c9b345862285940bb030dd67a6d45de&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-21T13:35:15.317Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=2f7dea0e774b42881c43a3e31e3d1afdc882543bb25f2c385d528b9b7907a2c7&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-21T14:01:26.008Z"
         }
       },
       "icon": {
@@ -7558,8 +7640,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/bfb30b48-50c3-459a-9cb3-a4c5cfb36c1e/mysql-like.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T123515Z&X-Amz-Expires=3600&X-Amz-Signature=20d1a45bffe02681f932e858635b3689324a87a5abe4715227c914c70b23d851&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-21T13:35:15.318Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/bfb30b48-50c3-459a-9cb3-a4c5cfb36c1e/mysql-like.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=3d71c0cbf33103ddb844ef71f4eb04312e77183e05821e3c28e0857f2d245f78&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-21T14:01:26.009Z"
         }
       },
       "icon": {
@@ -7947,8 +8029,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/33d23e03-f43d-4c01-84ae-9b4733c2aad2/redis.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T123515Z&X-Amz-Expires=3600&X-Amz-Signature=6da863d02c006073f34cf26213667389d52b70d89edfc473f5056034058e9c25&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-21T13:35:15.319Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/33d23e03-f43d-4c01-84ae-9b4733c2aad2/redis.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T130126Z&X-Amz-Expires=3600&X-Amz-Signature=a2506d8adcb059379a5ecac2588daa1158429eac9b64dcaa2ef1545cabfb9b22&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-21T14:01:26.013Z"
         }
       },
       "icon": {
