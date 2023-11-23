@@ -14,9 +14,8 @@ tags:
 summary: ""
 title: Day58【概念解析】InnoDB架构设计
 status: Published
-cover: "https://image.kuangyichen.com/image/innoDB%20structure.webp"
 urlname: 87f02b71-13f2-4c9c-a648-34dcf7b5a0bd
-updated: "2023-11-19 15:24:00"
+updated: "2023-11-23 05:34:00"
 ---
 
 # 前言
@@ -25,7 +24,9 @@ updated: "2023-11-19 15:24:00"
 
 # 整理定义
 
-![InnoDB 存储引擎架构图](https://image.kuangyichen.com/image/innodb-architecture-8-0.png)
+![MySQL 5.7 InnoDB 存储引擎架构图](https://image.kuangyichen.com/image/innodb-architecture-5-7.png)
+
+![MySQL 8.0 InnoDB 存储引擎架构图](https://image.kuangyichen.com/image/innodb-architecture-8-0.png)
 
 **左边是 InnoDB 的**[**内存数据架构**](https://dev.mysql.com/doc/refman/8.0/en/innodb-in-memory-structures.html)**（In-Memory Structure），右边是**[**磁盘数据架构**](https://dev.mysql.com/doc/refman/8.0/en/innodb-on-disk-structures.html)**（On-disk Structure）**
 
@@ -67,185 +68,6 @@ InnoDB 的磁盘结构是其如何在磁盘上存储数据和索引的方式。�
 > - 实践操作，除了理论学习之外，还是需要实践操作的。”实践是检验真理的唯一标准“。在实际过程中，可能能够发现更多纸上找不到的东西。
 > - 源码学习，这是最难的一点，也是最直接的一点，`show me code` 。结合源码，更能够体会设计的实际含义在内的。
 
-    - 阅读官方文档，这是第一手资料，也是最原始的资料：[MySQL :: MySQL 8.0 Reference Manual :: 15.4 InnoDB Architecture](https://dev.mysql.com/doc/refman/8.0/en/innodb-architecture.html)
-    - 阅读相关书籍，最好是英文版，中文版的话一则需要翻译过程，可能过时，二则翻译过程中没有办法原汁原味，可能会失去一些干货，如果有能力的话最好还是阅读英文。如果英文基础确实不好，那还是读中文版本的。
-    - 实践操作，除了理论学习之外，还是需要实践操作的。”实践是检验真理的唯一标准“。在实际过程中，可能能够发现更多纸上找不到的东西。
-    - 源码学习，这是最难的一点，也是最直接的一点，`show me code` 。结合源码，更能够体会设计的实际含义在内的。
-
 # 参考：
 
 [MySQL :: MySQL 8.0 Reference Manual :: 15.4 InnoDB Architecture](https://dev.mysql.com/doc/refman/8.0/en/innodb-architecture.html)
-
-> 📌 **快速跳转链接**  
-> 【概念解析】启动
->
-> 【概念解析】Day 1 - 10
->
-> 【概念解析】Day 11 - 20
->
-> 【概念解析】Day 21 - 30
->
-> 【概念解析】Day 31 - 40
->
-> 【概念解析】Day 41 - 50
->
-> 【概念解析】Day 51 - 60
->
-> 【概念解析】Day 61 - 70
-
-<details>
-<summary>【概念解析】启动</summary>
-
-[bookmark](https://kuangyichen.com/article/industry)
-
-[bookmark](https://kuangyichen.com/article/start-industry-100-words)
-
-</details>
-
-<details>
-<summary>【概念解析】Day 1 - 10</summary>
-
-[bookmark](https://kuangyichen.com/article/industry-day1)
-
-[bookmark](https://kuangyichen.com/article/industry-day2)
-
-[bookmark](https://kuangyichen.com/article/industry-day3)
-
-[bookmark](https://kuangyichen.com/article/industry-day4)
-
-[bookmark](https://kuangyichen.com/article/industry-day5)
-
-[bookmark](https://kuangyichen.com/article/industry-day6)
-
-[bookmark](https://kuangyichen.com/article/industry-day7)
-
-[bookmark](https://kuangyichen.com/article/industry-day8)
-
-[bookmark](https://kuangyichen.com/article/industry-day9)
-
-[bookmark](https://kuangyichen.com/article/industry-day10)
-
-</details>
-
-<details>
-<summary>【概念解析】Day 11 - 20</summary>
-
-[bookmark](https://kuangyichen.com/article/industry-day11)
-
-[bookmark](https://kuangyichen.com/article/industry-day12)
-
-[bookmark](https://kuangyichen.com/article/industry-day13)
-
-[bookmark](https://kuangyichen.com/article/industry-day14)
-
-[bookmark](https://kuangyichen.com/article/industry-day15)
-
-[bookmark](https://kuangyichen.com/article/industry-day16)
-
-[bookmark](https://kuangyichen.com/article/industry-day17)
-
-[bookmark](https://kuangyichen.com/article/industry-day18)
-
-[bookmark](https://kuangyichen.com/article/industry-day19)
-
-[bookmark](https://kuangyichen.com/article/industry-day20)
-
-</details>
-
-<details>
-<summary>【概念解析】Day 21 - 30</summary>
-
-[bookmark](https://kuangyichen.com/article/industry-day21)
-
-[bookmark](https://kuangyichen.com/article/industry-day22)
-
-[bookmark](https://kuangyichen.com/article/industry-day23)
-
-[bookmark](https://kuangyichen.com/article/industry-day24)
-
-[bookmark](https://kuangyichen.com/article/industry-day25)
-
-[bookmark](https://kuangyichen.com/article/industry-day26)
-
-[bookmark](https://kuangyichen.com/article/industry-day27)
-
-[bookmark](https://kuangyichen.com/article/industry-day28)
-
-[bookmark](https://kuangyichen.com/article/industry-day29)
-
-[bookmark](https://kuangyichen.com/article/industry-day30)
-
-</details>
-
-<details>
-<summary>【概念解析】Day 31 - 40</summary>
-
-[bookmark](https://kuangyichen.com/article/industry-day31)
-
-[bookmark](https://kuangyichen.com/article/industry-day32)
-
-[bookmark](https://kuangyichen.com/article/industry-day33)
-
-[bookmark](https://kuangyichen.com/article/industry-day34)
-
-[bookmark](https://kuangyichen.com/article/industry-day35)
-
-[bookmark](https://kuangyichen.com/article/industry-day36)
-
-[bookmark](https://kuangyichen.com/article/industry-day37)
-
-[bookmark](https://kuangyichen.com/article/industry-day38)
-
-[bookmark](https://kuangyichen.com/article/industry-day39)
-
-[bookmark](https://kuangyichen.com/article/industry-day40)
-
-</details>
-
-<details>
-<summary>【概念解析】Day 41 - 50</summary>
-
-[bookmark](https://kuangyichen.com/article/industry-day41)
-
-[bookmark](https://kuangyichen.com/article/industry-day42)
-
-[bookmark](https://kuangyichen.com/article/industry-day43)
-
-[bookmark](https://kuangyichen.com/article/industry-day44)
-
-[bookmark](https://kuangyichen.com/article/industry-day45)
-
-[bookmark](https://kuangyichen.com/article/industry-day46)
-
-[bookmark](https://kuangyichen.com/article/industry-day47)
-
-[bookmark](https://kuangyichen.com/article/industry-day48)
-
-[bookmark](https://kuangyichen.com/article/industry-day49)
-
-[bookmark](https://kuangyichen.com/article/industry-day50)
-
-</details>
-
-<details>
-<summary>【概念解析】Day 51 - 60</summary>
-
-[bookmark](https://kuangyichen.com/article/industry-day51)
-
-[bookmark](https://kuangyichen.com/article/industry-day52)
-
-[bookmark](https://kuangyichen.com/article/industry-day53)
-
-[bookmark](https://kuangyichen.com/article/industry-day54)
-
-[bookmark](https://kuangyichen.com/article/industry-day55)
-
-[bookmark](https://kuangyichen.com/article/industry-day56)
-
-[bookmark](https://kuangyichen.com/article/industry-day57)
-
-[bookmark](https://kuangyichen.com/article/industry-day58)
-
-[bookmark](https://kuangyichen.com/article/industry-day59)
-
-</details>

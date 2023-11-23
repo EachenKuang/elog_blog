@@ -3,7 +3,8 @@
     {
       "id": "87f02b71-13f2-4c9c-a648-34dcf7b5a0bd",
       "doc_id": "87f02b71-13f2-4c9c-a648-34dcf7b5a0bd",
-      "updated": 1700378640000,
+      "updated": 1700717640000,
+      "body_original": "\n# 前言\n\n\n> 😄 作为MySQL5.6之后的默认存储引擎，InnoDB因其支持事务、外键等特性可是风靡一时，现在也是数据库理论中的面试必备要素，知其然还须知其所以然，那么掌握其架构当然也是至关重要。\n\n\n# 整理定义\n\n\n![MySQL 5.7 InnoDB 存储引擎架构图](https://image.kuangyichen.com/image/innodb-architecture-5-7.png)\n\n\n![MySQL 8.0 InnoDB 存储引擎架构图](https://image.kuangyichen.com/image/innodb-architecture-8-0.png)\n\n\n**左边是InnoDB的**[**内存数据架构**](https://dev.mysql.com/doc/refman/8.0/en/innodb-in-memory-structures.html)**（In-Memory Structure），右边是**[**磁盘数据架构**](https://dev.mysql.com/doc/refman/8.0/en/innodb-on-disk-structures.html)**（On-disk Structure）**\n\n\n# 复述展开\n\n\n## InnoDB 内存结构设计\n\n\nInnoDB作为MySQL的一个存储引擎，它的内存结构设计用于优化数据处理性能。InnoDB的内存结构主要包括以下几个部分：\n\n1. **Buffer Pool**：<u>这是InnoDB最重要的内存结构之一，用于缓存表数据和索引</u>。当MySQL需要读取或写入数据时，它首先会查看这些数据是否已经在Buffer Pool中。如果在，那么就可以直接从内存中读取或写入，避免了磁盘I/O操作，从而大大提高了性能。\n2. **Change Buffer**：Change Buffer是Buffer Pool的一部分，用于缓存对二级索引的修改操作。当MySQL需要修改二级索引时，它可以先将修改操作写入Change Buffer，然后在后台慢慢地将这些修改应用到磁盘上的索引，这样可以减少磁盘I/O操作，提高性能。\n3. **Adaptive Hash Index**：这是InnoDB的一个优化特性，用于加速对Buffer Pool中数据的访问。当MySQL反复访问同一数据时，InnoDB会自动创建一个哈希索引，使得MySQL可以更快地找到这些数据。\n4. **Log Buffer**：这是InnoDB的另一个重要内存结构，用于缓存事务日志。当MySQL执行一个事务时，它会先将事务日志写入Log Buffer，然后在适当的时机将这些日志刷新到磁盘上，这样可以减少磁盘I/O操作，提高性能。\n5. **InnoDB内部数据字典**：InnoDB有一个内部的数据字典，用于存储表的元数据，如表的结构信息、索引信息等。\n\n## InnoDB 磁盘结构\n\n\nInnoDB的磁盘结构是其如何在磁盘上存储数据和索引的方式。以下是InnoDB磁盘结构的主要组成部分：\n\n1. **表（Tables）**：InnoDB存储引擎中的表是行式存储的，每个表都有一个或多个聚簇索引或非聚簇索引。表中的数据按主键顺序存储在聚簇索引中。\n2. **索引（Indexes）**：InnoDB使用B+树数据结构来实现索引，以加快数据访问速度。每个表至少有一个聚簇索引（主键索引），也可以有一个或多个二级索引。\n3. **表空间（Tablespaces）**：表空间是InnoDB存储数据和索引的地方。默认情况下，所有的InnoDB表都存储在一个名为ibdata1的系统表空间中，但用户也可以配置InnoDB使用多个或单独的表空间。\n4. **双写缓冲区（Doublewrite Buffer）**：双写缓冲区是InnoDB用来保护数据完整性的一种机制。在将数据页写入磁盘之前，InnoDB会先将其写入双写缓冲区。如果在写入过程中发生系统崩溃，InnoDB可以使用双写缓冲区中的数据恢复损坏的页。\n5. **重做日志（Redo Log）**：重做日志是InnoDB用来保证事务的持久性的一种机制。在事务提交时，InnoDB会先将事务的修改记录到重做日志，并确保重做日志被写入磁盘。如果在事务提交后发生系统崩溃，InnoDB可以使用重做日志恢复未完成的事务。\n6. **回滚日志（Undo Logs）**：回滚日志是InnoDB用来实现多版本并发控制（MVCC）和事务回滚的一种机制。当事务修改数据时，InnoDB会在回滚日志中保存修改前的数据。如果事务需要回滚，或者其他事务需要读取修改前的数据，InnoDB可以使用回滚日志来获取这些数据。\n\n# 理解体会\n\n\n理解InnoDB的结构是非常重要的，主要有以下几个原因：\n\n1. 性能优化：理解InnoDB的内存和磁盘结构可以帮助你更好地理解MySQL的性能瓶颈，并进行有效的优化。例如，理解Buffer Pool和Redo Log的工作原理可以帮助你更好地配置这些参数，以提高MySQL的性能。\n2. 数据恢复：当数据库发生故障时，理解InnoDB的结构可以帮助你更好地进行数据恢复。例如，理解Doublewrite Buffer和Redo Log的工作原理可以帮助你恢复因系统崩溃而损坏的数据。\n3. 事务管理：理解InnoDB的事务管理机制，如Undo Logs和MVCC，可以帮助你更好地理解事务的行为，如何处理并发控制和事务隔离。\n\n> 💡 **如何学习呢？**  \n> - 阅读官方文档，这是第一手资料，也是最原始的资料：[MySQL :: MySQL 8.0 Reference Manual :: 15.4 InnoDB Architecture](https://dev.mysql.com/doc/refman/8.0/en/innodb-architecture.html)  \n>   \n> - 阅读相关书籍，最好是英文版，中文版的话一则需要翻译过程，可能过时，二则翻译过程中没有办法原汁原味，可能会失去一些干货，如果有能力的话最好还是阅读英文。如果英文基础确实不好，那还是读中文版本的。  \n>   \n> - 实践操作，除了理论学习之外，还是需要实践操作的。”实践是检验真理的唯一标准“。在实际过程中，可能能够发现更多纸上找不到的东西。  \n>   \n> - 源码学习，这是最难的一点，也是最直接的一点，`show me code` 。结合源码，更能够体会设计的实际含义在内的。\n\n\n# 参考：\n\n\n[MySQL :: MySQL 8.0 Reference Manual :: 15.4 InnoDB Architecture](https://dev.mysql.com/doc/refman/8.0/en/innodb-architecture.html)\n\n",
       "properties": {
         "password": "",
         "icon": "",
@@ -21,9 +22,8 @@
         "summary": "",
         "title": "Day58【概念解析】InnoDB架构设计",
         "status": "Published",
-        "cover": "https://image.kuangyichen.com/image/innoDB%20structure.webp",
         "urlname": "87f02b71-13f2-4c9c-a648-34dcf7b5a0bd",
-        "updated": "2023-11-19 15:24:00"
+        "updated": "2023-11-23 05:34:00"
       },
       "catalog": [
         {
@@ -3290,9 +3290,93 @@
       "body": "",
       "realName": "Day62【概念解析】InnoDB Log Buffer",
       "relativePath": "/行业概念/Day62【概念解析】InnoDB Log Buffer.md"
+    },
+    {
+      "id": "736ee81e-b82a-4b23-acd2-79554d2e1a40",
+      "doc_id": "736ee81e-b82a-4b23-acd2-79554d2e1a40",
+      "updated": 1700717640000,
+      "body_original": "\n# 整理定义\n\n\n中文名称：重做日志\n\n\n英文名称：Redo Log\n\n\n![MySQL 5.7版本](https://image.kuangyichen.com/image/innodb-architecture-5-7.png)\n\n\n![MySQL 8.0版本](https://image.kuangyichen.com/image/innodb-architecture-8-0.png)\n\n\n> 🎈 **What is Redo Log？**  \n> **重做日志（Redo Log）**是一种基于<u>磁盘</u>的<u>数据结构</u>，用于在<u>崩溃恢复期间修正由不完整事务写入的数据</u>。在正常操作期间，重做日志对由SQL语句或低级API调用导致的更改表数据的请求进行编码。在意外关闭之前未完成更新数据文件的修改将在初始化和接受连接之前自动重放。  \n>   \n> 重做日志在磁盘上以<u>重做日志文件</u>的形式物理表示。写入重做日志文件的数据以受影响的记录为单位进行编码，这些数据统称为**重做（Redo）**。数据通过重做日志文件的传递由递增的**LSN（日志序列号）**值表示。重做日志数据在数据修改发生时追加，随着检查点的进行，最旧的数据将被截断。  \n>   \n> 默认情况下**【MySQL 8.0.30之前】**，重做日志在磁盘上以两个文件命名为ib_logfile0和ib_logfile1的形式进行物理表示。MySQL以循环方式向重做日志文件写入数据。重做日志中的数据以受影响的记录为单位进行编码，这些数据统称为重做。数据通过重做日志的传递由递增的LSN（日志序列号）值表示。\n\n\n# 复述展开\n\n\n**redo log（重做日志）** 实现持久化和原子性 在innoDB的存储引擎中，事务日志通过重做(redo)日志和innoDB存储引擎的日志缓冲(InnoDB Log Buffer)实现。事务开启时，事务中的操作，都会先写入存储引擎的日志缓冲中，在事务提交之前，这些缓冲的日志都需要提前刷新到磁盘上持久化，这就是DBA们口中常说的“日志先行”(Write-Ahead Logging)。 当事务提交之后，在Buffer Pool中映射的数据文件才会慢慢刷新到磁盘。此时如果数据库崩溃或者宕机，那么当系统重启进行恢复时，就可以根据redo log中记录的日志，把数据库恢复到崩溃前的一个状态。未完成的事务，可以继续提交，也可以选择回滚，这基于恢复的策略而定。 在系统启动的时候，就已经为[redo log](https://www.zhihu.com/search?q=redo%20log&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra=%7B%22sourceType%22%3A%22answer%22%2C%22sourceId%22%3A1935044903%7D)分配了一块连续的存储空间，以顺序追加的方式记录Redo Log，通过顺序IO来改善性能。所有的事务共享redo log的存储空间，它们的Redo Log按语句的执行顺序，依次交替的记录在一起。\n\n\n## Redo Log File 的组成\n\n\n名称：`ib_logfileN`\n\n\n默认情况下：`ib_logfile0` and `ib_logfile1`\n\n\n如果有N个，则为 `ib_logfile0`，`ib_logfile1`，`ib_logfile2`，… `ib_logfileN`，\n\n\n最多100个文件，所有文件总容量最大为 512GB\n\n\n## 如何更改 Redo Log 文件的数量或大小？\n\n\n更改InnoDB重做日志文件的数量或大小的步骤如下：\n\n1. 停止MySQL服务器，并确保它能够正常关闭，没有出现错误。\n2. 编辑`my.cnf`文件以更改日志文件的配置。要更改日志文件的大小，配置`innodb_log_file_size`。要增加日志文件的数量，配置`innodb_log_files_in_group`。\n3. 再次启动MySQL服务器。\n\n如果InnoDB检测到`innodb_log_file_size`与重做日志文件的大小不同，它会写入一个日志检查点，关闭并删除旧的日志文件，创建新的请求大小的日志文件，并打开新的日志文件。\n\n\n### `innodb_log_file_size`\n\n\n| **Command-Line Format**      | `--innodb-log-file-size=#`                                                                                           |\n| ---------------------------- | -------------------------------------------------------------------------------------------------------------------- |\n| **System Variable**          | [`innodb_log_file_size`](https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_log_file_size) |\n| **Scope**                    | Global                                                                                                               |\n| **Dynamic**                  | No                                                                                                                   |\n| **Type**                     | Integer                                                                                                              |\n| **Default Value**            | `50331648` 【48MB】                                                                                                    |\n| **Minimum Value (≥ 5.7.11)** | `4194304`                                                                                                            |\n| **Minimum Value (≤ 5.7.10)** | `1048576`                                                                                                            |\n| **Maximum Value**            | `512GB / innodb_log_files_in_group`                                                                                  |\n| **Unit**                     | bytes                                                                                                                |\n\n\n [`innodb_log_file_size`](https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_log_file_size) 最小值 从 **1MB** 改为 **4MB** 在 **MySQL 5.7.11**.\n\n\n### `innodb_log_files_in_group`\n\n\n| **Command-Line Format** | `--innodb-log-files-in-group=#`                                                                                                |\n| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------ |\n| **System Variable**     | [`innodb_log_files_in_group`](https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_log_files_in_group) |\n| **Scope**               | Global                                                                                                                         |\n| **Dynamic**             | No                                                                                                                             |\n| **Type**                | Integer                                                                                                                        |\n| **Default Value**       | `2`                                                                                                                            |\n| **Minimum Value**       | `2`                                                                                                                            |\n| **Maximum Value**       | `100`                                                                                                                          |\n\n\n> 🔥 **注意：**  \n> ([`innodb_log_file_size`](https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_log_file_size) * [`innodb_log_files_in_group`](https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_log_files_in_group)) 的值不能超过 512GB.\n\n\n## 优化指南\n\n\n考虑以下优化重做日志记录的指南：\n\n1. **将重做日志文件设置得很大，甚至可以与缓冲池一样大**。当InnoDB将重做日志文件写满时，它必须在检查点中将缓冲池的修改内容写入磁盘。较小的重做日志文件会导致许多不必要的磁盘写入。尽管过去大的重做日志文件会导致较长的恢复时间，但现在恢复速度更快，您可以放心使用大的重做日志文件。\n2. 通过配置`innodb_log_file_size`和`innodb_log_files_in_group`选项来设置重做日志文件的大小和数量。\n3. **考虑增加日志缓冲区的大小**。较大的日志缓冲区可以使大型事务在提交之前无需将日志写入磁盘。因此，如果您有更新、插入或删除大量行的事务，增大日志缓冲区可以节省磁盘I/O。可以使用`innodb_log_buffer_size`配置选项来配置日志缓冲区的大小。\n4. 配置`innodb_log_write_ahead_size`选项以避免“读写冲突”。该选项定义了重做日志的预写块大小。**将****`innodb_log_write_ahead_size`****设置为与操作系统或文件系统缓存块大小相匹配。**当由于重做日志的预写块大小与操作系统或文件系统缓存块大小不匹配而无法完全缓存重做日志块时，会发生读写冲突。\n5. **`innodb_log_write_ahead_size`****的有效值是InnoDB日志文件块大小（2的n次方）的倍数**。最小值为InnoDB日志文件块大小（512）。当指定最小值时，不会发生预写。最大值等于`innodb_page_size`值。如果为`innodb_log_write_ahead_size`指定的值大于`innodb_page_size`值，则`innodb_log_write_ahead_size`设置将被截断为`innodb_page_size`值。\n6. 如果将`innodb_log_write_ahead_size`值设置得太低，与操作系统或文件系统缓存块大小相比，会导致读写冲突。如果将值设置得太高，可能会对日志文件写入的fsync性能产生轻微影响，因为多个块会同时被写入。\n\n# 理解体会\n\n\nInnoDB的重做日志（Redo Log）是MySQL数据库中的一个重要组件，它是一种持久化存储机制，用于记录数据库事务执行过程中对数据的所有修改操作。\n\n\n定义：重做日志是一种日志文件，它记录了所有修改数据库数据的操作，以便在数据库崩溃后可以用来恢复数据。重做日志是循环写入的，当达到一定大小后，会从头开始覆盖旧的日志记录。\n\n\n作用：\n\n1. 数据恢复：在数据库崩溃后，可以通过重做日志来恢复数据，保证数据的持久性。\n2. 提高性能：在事务提交时，只需要将重做日志写入到磁盘，而不需要立即将修改的数据写入到磁盘，这可以减少磁盘I/O操作的次数，提高性能。\n\n> 🔥 **注意**  \n> 在MySQL 8.0.30版本之后，Redo Log 的配置有些许变化，可以参考链接。本文主要讲解之前的情况。\n\n\n# 参考\n\n\n[MySQL :: MySQL 8.0 Reference Manual :: 15.6.5 Redo Log](https://dev.mysql.com/doc/refman/8.0/en/innodb-redo-log.html)\n\n\n[MySQL :: MySQL 8.0 Reference Manual :: 8.5.4 Optimizing InnoDB Redo Logging](https://dev.mysql.com/doc/refman/8.0/en/optimizing-innodb-logging.html)\n\n",
+      "properties": {
+        "password": "",
+        "icon": "",
+        "date": "2023-11-23",
+        "type": "Post",
+        "category": "行业概念",
+        "slug": "industry-day63",
+        "tags": [
+          "行业概念",
+          "文字",
+          "思考",
+          "MySQL"
+        ],
+        "summary": "",
+        "title": "Day63【概念解析】InnoDB Redo Log",
+        "status": "Published",
+        "urlname": "736ee81e-b82a-4b23-acd2-79554d2e1a40",
+        "updated": "2023-11-23 05:34:00"
+      },
+      "catalog": [
+        {
+          "title": "行业概念",
+          "doc_id": "736ee81e-b82a-4b23-acd2-79554d2e1a40"
+        }
+      ],
+      "body": "",
+      "realName": "Day63【概念解析】InnoDB Redo Log",
+      "relativePath": "/行业概念/Day63【概念解析】InnoDB Redo Log.md"
     }
   ],
   "catalog": [
+    {
+      "object": "page",
+      "id": "736ee81e-b82a-4b23-acd2-79554d2e1a40",
+      "created_time": "2023-11-23T05:29:00.000Z",
+      "last_edited_time": "2023-11-23T05:34:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
+      },
+      "cover": {
+        "type": "external",
+        "external": {
+          "url": "https://image.kuangyichen.com/image/innodb%20redo%20log.webp"
+        }
+      },
+      "icon": {
+        "type": "emoji",
+        "emoji": "🗒️"
+      },
+      "parent": {
+        "type": "database_id",
+        "database_id": "cd6c4967-e5fe-45d2-976d-5d46736ada90"
+      },
+      "archived": false,
+      "properties": {
+        "password": "",
+        "icon": "",
+        "date": "2023-11-23",
+        "type": "Post",
+        "category": "行业概念",
+        "slug": "industry-day63",
+        "tags": [
+          "行业概念",
+          "文字",
+          "思考",
+          "MySQL"
+        ],
+        "summary": "",
+        "title": "Day63【概念解析】InnoDB Redo Log",
+        "status": "Published",
+        "urlname": "736ee81e-b82a-4b23-acd2-79554d2e1a40",
+        "updated": "2023-11-23 05:34:00"
+      },
+      "url": "https://www.notion.so/Day63-InnoDB-Redo-Log-736ee81eb82a4b23acd279554d2e1a40",
+      "public_url": "https://eachenkuang.notion.site/Day63-InnoDB-Redo-Log-736ee81eb82a4b23acd279554d2e1a40"
+    },
     {
       "object": "page",
       "id": "e9f2dc4c-88cf-4d15-9dc5-e82a4432a018",
@@ -3497,7 +3581,7 @@
       "object": "page",
       "id": "87f02b71-13f2-4c9c-a648-34dcf7b5a0bd",
       "created_time": "2023-11-19T07:21:00.000Z",
-      "last_edited_time": "2023-11-19T07:24:00.000Z",
+      "last_edited_time": "2023-11-23T05:34:00.000Z",
       "created_by": {
         "object": "user",
         "id": "730822a3-a39d-4313-aff9-f18324e745dd"
@@ -3539,7 +3623,7 @@
         "title": "Day58【概念解析】InnoDB架构设计",
         "status": "Published",
         "urlname": "87f02b71-13f2-4c9c-a648-34dcf7b5a0bd",
-        "updated": "2023-11-19 07:24:00"
+        "updated": "2023-11-23 05:34:00"
       },
       "url": "https://www.notion.so/Day58-InnoDB-87f02b7113f24c9ca64834dcf7b5a0bd",
       "public_url": "https://eachenkuang.notion.site/Day58-InnoDB-87f02b7113f24c9ca64834dcf7b5a0bd"
@@ -4360,8 +4444,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/86f96968-f617-4740-a539-e383d7d7f980/jon-tyson-P2aOvMMUJnY-unsplash.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T020845Z&X-Amz-Expires=3600&X-Amz-Signature=1b9fe83d3dc8df99581816d3432e839ef1f4f11c20713de4210d03941757fc94&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-23T03:08:45.342Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/86f96968-f617-4740-a539-e383d7d7f980/jon-tyson-P2aOvMMUJnY-unsplash.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T053712Z&X-Amz-Expires=3600&X-Amz-Signature=f0be6dbf1911ce6f806a686f59d21258f2a8c2b73398d3d29d0070934d5dba0d&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-23T06:37:12.671Z"
         }
       },
       "icon": {
@@ -5256,8 +5340,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/85f6c012-2895-49af-99a2-3e005710adbc/cover_%281%29.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T020845Z&X-Amz-Expires=3600&X-Amz-Signature=0405c5ccae437af57e987ce73ed886d48507c7e270e7610a1055365a8f33fb2a&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-23T03:08:45.345Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/85f6c012-2895-49af-99a2-3e005710adbc/cover_%281%29.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T053712Z&X-Amz-Expires=3600&X-Amz-Signature=7659dd2d841c3a389baf638f483012add02b2ce6fb0443a5f1fc493602c1d689&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-23T06:37:12.690Z"
         }
       },
       "icon": {
@@ -7076,8 +7160,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T020845Z&X-Amz-Expires=3600&X-Amz-Signature=57a2afb20fef2df9838fed3afe4be4fda2e486c9560bdaf47f45ac9fe15e5b95&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-23T03:08:45.351Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T053712Z&X-Amz-Expires=3600&X-Amz-Signature=d6edccc56fddd024e616c003f138245a7de58515e4650099ee55f777e20f715e&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-23T06:37:12.680Z"
         }
       },
       "icon": {
@@ -7127,8 +7211,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T020846Z&X-Amz-Expires=3600&X-Amz-Signature=92958439d1bf33b969cd7bc09b7ff3cc4be5525daa674bd28f6d7a537c3ced48&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-23T03:08:45.360Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T053712Z&X-Amz-Expires=3600&X-Amz-Signature=d6edccc56fddd024e616c003f138245a7de58515e4650099ee55f777e20f715e&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-23T06:37:12.681Z"
         }
       },
       "icon": {
@@ -7177,8 +7261,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T020845Z&X-Amz-Expires=3600&X-Amz-Signature=57a2afb20fef2df9838fed3afe4be4fda2e486c9560bdaf47f45ac9fe15e5b95&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-23T03:08:45.352Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T053712Z&X-Amz-Expires=3600&X-Amz-Signature=d6edccc56fddd024e616c003f138245a7de58515e4650099ee55f777e20f715e&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-23T06:37:12.681Z"
         }
       },
       "icon": {
@@ -7227,8 +7311,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T020845Z&X-Amz-Expires=3600&X-Amz-Signature=57a2afb20fef2df9838fed3afe4be4fda2e486c9560bdaf47f45ac9fe15e5b95&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-23T03:08:45.352Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T053712Z&X-Amz-Expires=3600&X-Amz-Signature=d6edccc56fddd024e616c003f138245a7de58515e4650099ee55f777e20f715e&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-23T06:37:12.681Z"
         }
       },
       "icon": {
@@ -7277,8 +7361,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T020846Z&X-Amz-Expires=3600&X-Amz-Signature=92958439d1bf33b969cd7bc09b7ff3cc4be5525daa674bd28f6d7a537c3ced48&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-23T03:08:45.352Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T053712Z&X-Amz-Expires=3600&X-Amz-Signature=d6edccc56fddd024e616c003f138245a7de58515e4650099ee55f777e20f715e&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-23T06:37:12.681Z"
         }
       },
       "icon": {
@@ -7327,8 +7411,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T020846Z&X-Amz-Expires=3600&X-Amz-Signature=92958439d1bf33b969cd7bc09b7ff3cc4be5525daa674bd28f6d7a537c3ced48&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-23T03:08:45.353Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T053712Z&X-Amz-Expires=3600&X-Amz-Signature=d6edccc56fddd024e616c003f138245a7de58515e4650099ee55f777e20f715e&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-23T06:37:12.682Z"
         }
       },
       "icon": {
@@ -7377,8 +7461,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T020846Z&X-Amz-Expires=3600&X-Amz-Signature=92958439d1bf33b969cd7bc09b7ff3cc4be5525daa674bd28f6d7a537c3ced48&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-23T03:08:45.353Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T053712Z&X-Amz-Expires=3600&X-Amz-Signature=d6edccc56fddd024e616c003f138245a7de58515e4650099ee55f777e20f715e&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-23T06:37:12.682Z"
         }
       },
       "icon": {
@@ -7427,8 +7511,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T020846Z&X-Amz-Expires=3600&X-Amz-Signature=92958439d1bf33b969cd7bc09b7ff3cc4be5525daa674bd28f6d7a537c3ced48&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-23T03:08:45.353Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T053712Z&X-Amz-Expires=3600&X-Amz-Signature=d6edccc56fddd024e616c003f138245a7de58515e4650099ee55f777e20f715e&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-23T06:37:12.690Z"
         }
       },
       "icon": {
@@ -7477,8 +7561,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T020846Z&X-Amz-Expires=3600&X-Amz-Signature=92958439d1bf33b969cd7bc09b7ff3cc4be5525daa674bd28f6d7a537c3ced48&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-23T03:08:45.353Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T053712Z&X-Amz-Expires=3600&X-Amz-Signature=d6edccc56fddd024e616c003f138245a7de58515e4650099ee55f777e20f715e&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-23T06:37:12.682Z"
         }
       },
       "icon": {
@@ -7527,8 +7611,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T020846Z&X-Amz-Expires=3600&X-Amz-Signature=92958439d1bf33b969cd7bc09b7ff3cc4be5525daa674bd28f6d7a537c3ced48&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-23T03:08:45.354Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T053712Z&X-Amz-Expires=3600&X-Amz-Signature=d6edccc56fddd024e616c003f138245a7de58515e4650099ee55f777e20f715e&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-23T06:37:12.683Z"
         }
       },
       "icon": {
@@ -7577,8 +7661,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T020846Z&X-Amz-Expires=3600&X-Amz-Signature=92958439d1bf33b969cd7bc09b7ff3cc4be5525daa674bd28f6d7a537c3ced48&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-23T03:08:45.354Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T053712Z&X-Amz-Expires=3600&X-Amz-Signature=d6edccc56fddd024e616c003f138245a7de58515e4650099ee55f777e20f715e&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-23T06:37:12.683Z"
         }
       },
       "icon": {
@@ -7627,8 +7711,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T020846Z&X-Amz-Expires=3600&X-Amz-Signature=92958439d1bf33b969cd7bc09b7ff3cc4be5525daa674bd28f6d7a537c3ced48&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-23T03:08:45.354Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T053712Z&X-Amz-Expires=3600&X-Amz-Signature=d6edccc56fddd024e616c003f138245a7de58515e4650099ee55f777e20f715e&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-23T06:37:12.683Z"
         }
       },
       "icon": {
@@ -7726,8 +7810,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/bfb30b48-50c3-459a-9cb3-a4c5cfb36c1e/mysql-like.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T020846Z&X-Amz-Expires=3600&X-Amz-Signature=6e55322be198c62cb4e337ac9fa7ebf3b0c7ad9b51508118d4de07128f34410c&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-23T03:08:45.355Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/bfb30b48-50c3-459a-9cb3-a4c5cfb36c1e/mysql-like.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T053712Z&X-Amz-Expires=3600&X-Amz-Signature=89259d4f51ce07762e04c9b69b458fc9f56fbe838f9e74b4d0c5565256780a98&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-23T06:37:12.684Z"
         }
       },
       "icon": {
@@ -8115,8 +8199,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/33d23e03-f43d-4c01-84ae-9b4733c2aad2/redis.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T020846Z&X-Amz-Expires=3600&X-Amz-Signature=294119cf89e07ba9280ffba0ac8fdf39660dcf73b5de3cdf8c2ad165c5138d49&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-23T03:08:45.357Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/33d23e03-f43d-4c01-84ae-9b4733c2aad2/redis.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231123%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231123T053712Z&X-Amz-Expires=3600&X-Amz-Signature=4fd8fb23339664d0584e5786e1b8d441ba3c03a67e80a3ade713eee86fe9c923&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-23T06:37:12.686Z"
         }
       },
       "icon": {
