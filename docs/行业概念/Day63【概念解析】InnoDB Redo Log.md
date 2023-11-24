@@ -14,7 +14,7 @@ summary: ""
 title: Day63【概念解析】InnoDB Redo Log
 status: Published
 urlname: 736ee81e-b82a-4b23-acd2-79554d2e1a40
-updated: "2023-11-23 05:34:00"
+updated: "2023-11-24 03:06:00"
 ---
 
 # 整理定义
