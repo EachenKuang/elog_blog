@@ -14,7 +14,7 @@ summary: ""
 title: Day65【概念解析】InnoDB Doublewrite Buffer
 status: Published
 urlname: 5f02c699-29b2-4c1a-8464-a802364e6024
-updated: "2023-11-27 02:41:00"
+updated: "2023-11-27 03:02:00"
 ---
 
 # 整理定义
@@ -78,7 +78,7 @@ SHOW VARIABLES LIKE 'innodb_page_size';
 
 MySQL 程序是跑在 Linux 操作系统上的，需要跟操作系统交互，所以 MySQL 中一页数据刷到磁盘，要写 4 个文件系统里的页。
 
-![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/aae5c118-2852-4035-a0ba-5a519b909b7c/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231127%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231127T024350Z&X-Amz-Expires=3600&X-Amz-Signature=93578c6737e0be217e7ce14afb94fb25dc8d6bd24dfc74a9931324f7c47ec6af&X-Amz-SignedHeaders=host&x-id=GetObject)
+![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/aae5c118-2852-4035-a0ba-5a519b909b7c/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231127%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231127T030717Z&X-Amz-Expires=3600&X-Amz-Signature=9f1c09c6eed93cb39a3351f6f2cefc35f0a68e6bf832cc59027945c52833f6b8&X-Amz-SignedHeaders=host&x-id=GetObject)
 
 **需要注意的是，这个操作并非原子操作，比如操作系统写到第二个页的时候，Linux 机器断电了，这时候就会出现问题了。造成”页数据损坏“。并且这种”页数据损坏“靠 redo 日志是无法修复的**。
 
