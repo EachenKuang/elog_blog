@@ -3358,9 +3358,93 @@
       "body": "",
       "realName": "Day64【概念解析】InnoDB Undo Log",
       "relativePath": "/行业概念/Day64【概念解析】InnoDB Undo Log.md"
+    },
+    {
+      "id": "5f02c699-29b2-4c1a-8464-a802364e6024",
+      "doc_id": "5f02c699-29b2-4c1a-8464-a802364e6024",
+      "updated": 1701052860000,
+      "body_original": "\n# 整理定义\n\n\n中文名称：双写缓冲区\n\n\n英文名称：Doublewrite Buffer\n\n\n![MySQL 5.7版本](https://image.kuangyichen.com/image/innodb-architecture-5-7.png)\n\n\n![MySQL 8.0版本](https://image.kuangyichen.com/image/innodb-architecture-8-0.png)\n\n\n**双写缓冲区（Doublewrite Buffer）是**一个存储区域，InnoDB 在将页面写入 InnoDB 数据文件中的正确位置之前先将页面写入从缓冲池刷新的位置。 如果在页面写入过程中存在操作系统、存储子系统或意外的 mysqld 进程退出，InnoDB 可以在崩溃恢复期间从双写缓冲区中找到页面的良好副本。\n\n\n在 `MySQL 8.0.20`之前，双写缓冲存储区域位于InnoDB系统表空间中。 从`MySQL 8.0.20`开始，双写缓冲区存储区域位于**双写缓冲文件（Doublewrite Buffer Files）**中。\n\n\n## doublewrite buffer配置提供以下参数：\n\n\n### `innodb_doublewrite`\n\n- `innodb_doublewrite`参数控制是否启用doublewrite buffer。多数场景下默认是启用的。为了禁用doublewrite buffer，设置`innodb_doublewrite=0`或者启动MySQL服务时加`-skip-innodb-doublewrite`选项。例如在性能压测的场景下，如果您更关注性能而不是数据可靠性，您可以禁用doublewrite buffer。\n如果doublewrite buffer位于支持原子写的Fusion-io设备上，则自动禁用doublewrite buffer，并使用Fusion-io原子写来执行数据文件写。但是，要注意`innodb_doublewrite`设置是全局的。当doublewrite buffer被禁用时，它对不在Fusion-io硬件上的数据文件也禁用。该功能仅在Fusion-io硬件上支持，在Linux中仅支持Fusion-io NVMFS。为了充分利用这个功能，建议将`innodb_flush_method=O_DIRECT`\n\n### `innodb_doublewrite_dir`\n\n- `innodb_doublewrite_dir`（8.0.20引入）定义了InnoDB创建双写文件的目录。如果目录没有指定，双写文件创建在`innodb_data_home_dir`目录下，没有指定默认在数据目录下。\n哈希符'#'会自动创建在指定目录名前缀，避免与shema名冲突。然而，如果使用了'.', '#'. 或者'/'指定了目录前缀，则不在目录名前缀没有哈希符'#'。\n理想情况下，双写目录应该放在最快的存储上。\n\n### `innodb_doublewrite_files`\n\n- `innodb_doublewrite_files`参数定义了双写文件的数量。默认情况下，每个缓冲池实例都会创建2个双写文件：一个刷新列表双写文件和一个LRU列表双写文件。\n刷新列表双写文件用于从缓冲池刷新列表中刷新页。刷新列表双写文件默认大小是`InnoDB page size * doublewrite page bytes`.\nLRU列表双写文件是用于刷新从缓冲池LRU列表的页。它也包括单个页刷新的槽。LRU列表双写文件默认大小为`InnoDB page size * (doublewrite pages + (512 / the number of buffer pool instances))`，512是为单个页刷新保留的槽的总数。\n至少有2个双写文件。双写文件的最大数量是缓冲池实例的两倍。（缓冲池实例的数量由参数`innodb_buffer_pool_instances`控制）\n双写文件有以下格式：`#ib_page_size_file_number.dblwr`。例如，下面的双写文件是在一个InnoDB页大小为16KB，单个缓冲池的MySQL实例上创建：\n#ib_16384_0.dblwr #ib_16384_1.dblwr\n`innodb_doublewrite_files`参数用于高级性能调优。默认设定已经适用于大多数用户。\n\n### `innodb_doublewrite_pages`\n\n- `innodb_doublewrite_pages`参数（MySQL8.0.20引入）控制每个线程双写页的最大数量。如果这个值没有指定，`innodb_doublewrite_pages`设置为`innodb_write_io_threads`值。这个参数用于高级性能调优。默认值已经适用于大多数用户。\n\n### `innodb_doublewrite_batch_size`\n\n- `innodb_doublewrite_batch_size`参数（MySQL8.0.20引入）控制一批写入双写页的数量。这个参数用于高级性能调优。默认值已经适用于大多数用户。\n\n# 复述展开\n\n\n## 为什么需要双写缓冲区？\n\n\n我们常见的服务器一般都是Linux操作系统，Linux文件系统页（OS Page）的大小默认是4KB。而MySQL的页（Page）大小默认是16KB。\n\n\n可以使用如下命令查看MySQL的Page大小：\n\n\n```sql\nSHOW VARIABLES LIKE 'innodb_page_size';\n```\n\n\n一般情况下，其余程序因为需要跟操作系统交互，它们的页（Page）都会大于等于操作系统的页大小，为整数倍。比如，Oracle的Page大小为8KB。\n\n\nMySQL程序是跑在Linux操作系统上的，需要跟操作系统交互，所以MySQL中一页数据刷到磁盘，要写4个文件系统里的页。\n\n\n![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/aae5c118-2852-4035-a0ba-5a519b909b7c/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231127%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231127T024350Z&X-Amz-Expires=3600&X-Amz-Signature=93578c6737e0be217e7ce14afb94fb25dc8d6bd24dfc74a9931324f7c47ec6af&X-Amz-SignedHeaders=host&x-id=GetObject)\n\n\n**需要注意的是，这个操作并非原子操作，比如操作系统写到第二个页的时候，Linux机器断电了，这时候就会出现问题了。造成”页数据损坏“。并且这种”页数据损坏“靠 redo日志是无法修复的**。\n\n\n**重做日志中记录的是对页的物理操作，而不是页面的全量记录，而如果发生partial page write（部分页写入）问题时，出现问题的是未修改过的数据，此时重做日志(Redo Log)无能为力。写doublewrite buffer成功了，这个问题就不用担心了**。\n\n\nDoublewrite Buffer的出现就是为了解决上面的这种情况，虽然名字带了Buffer，但实际上Doublewrite Buffer是**内存+磁盘**的结构。\n\n\nDoublewrite Buffer是一种特殊文件flush技术，带给InnoDB存储引擎的是<u>数据页的可靠性</u>。它的作用是，在把页写到数据文件之前，InnoDB先把它们写到一个叫doublewrite buffer（双写缓冲区）的共享表空间内，在写doublewrite buffer完成后，InnoDB才会把页写到数据文件的适当的位置。如果在写页的过程中发生意外崩溃，InnoDB在稍后的恢复过程中在doublewrite buffer中找到完好的page副本用于恢复。\n\n\n【[MySQL双写缓冲区(Doublewrite Buffer)-阿里云开发者社区 (aliyun.com)](https://developer.aliyun.com/article/1307701)】\n\n\n# 理解体会\n\n\n最后我们总结下双写缓冲器的一些关键点：\n\n\n## **Doublewrite 解决了什么问题？**\n\n\n为了解决**部分页面写入**问题(Partial Page Write)。\n\n\nMySQL写入修改时刷新整个页面(默认16kb)，而不仅仅是刷新页面中已更改的记录。而系统的单次io，一般是512byte为单位的，在断电，OS crash(操作系统崩溃)情况下可能会丢失数据。\n\n\n## **Doublewrite 是指哪两次写入？**\n\n1. 写Doublewrite buffer，注意: Doublewrite buffer**是磁盘不是内存**。\n2. 写入数据文件。\n\n> 写入顺序：先写doublewrite buffer,写成功后再写到数据文件。\n\n\n## **Doublewrite buffer存储区位于什么地方？**\n\n- 在MySQL 8.0.20之前:位于InnoDB系统表空间中(ibdata文件)\n- 从MySQL 8.0.20开始:位于doublewrite文件中,文件由`innodb_doublewrite_dir`和`innodb_doublewrite_files`配置确定\n\n> doublewrite由两部分组成，一部分是内存中的doublewritebuffer，大小为2MB，另一部分是物理磁盘上共享表空间中连续的128个页，即2个区（extent），大小同样为2MB。在对缓冲池的脏页进行刷新时，并不直接写磁盘，而是会通过memcpy函数将脏页先复制到内存中的doublewritebuffer，之后通过doublewritebuffer再分两次，每次1MB顺序地写入共享表空间的物理磁盘上，然后马上调用fsync函数，同步磁盘，避免缓冲写带来的问题。在这个过程中，因为doublewrite页是连续的，因此这个过程是顺序写的，开销并不是很大。在完成doublewrite页的写入后，再将doublewritebuffer中的页写入各个表空间文件中，此时的写入则是离散的。\n\n\n\t引用自：姜承尧. MySQL技术内幕：InnoDB存储引擎(第2版) (数据库技术丛书) (Chinese Edition) (p. 106). 机械工业出版社. Kindle 版本.\n\n\n## **innodb 什么时候将脏页写入Doublewrite buffer中?**\n\n\n由以下几个参数决定：\n\n- innodb_max_dirty_pages_pct_lwm:低位水平标记，达到该值将启动缓冲刷新,默认为10（百分比，脏页/缓冲池）\n- innodb_max_dirty_pages_pct: 脏页数量与缓冲池比例阈值，默认为90\n- 如果开启自适应刷新（Adaptive Flushing）InnoDB根据重做日志生成的速度和当前的刷新率，使用自适应刷新算法来动态调整刷新率。\n\n# 参考\n\n\n[MySQL双写缓冲区(Doublewrite Buffer)-阿里云开发者社区 (aliyun.com)](https://developer.aliyun.com/article/1307701)\n\n\n[MySQL :: MySQL 5.7 Reference Manual :: 14.6.5 Doublewrite Buffer](https://dev.mysql.com/doc/refman/5.7/en/innodb-doublewrite-buffer.html)\n\n\n[MySQL :: MySQL 8.0 Reference Manual :: 15.6.4 Doublewrite Buffer](https://dev.mysql.com/doc/refman/8.0/en/innodb-doublewrite-buffer.html)\n\n",
+      "properties": {
+        "password": "",
+        "icon": "",
+        "date": "2023-11-25",
+        "type": "Post",
+        "category": "行业概念",
+        "slug": "industry-day65",
+        "tags": [
+          "行业概念",
+          "文字",
+          "思考",
+          "MySQL"
+        ],
+        "summary": "",
+        "title": "Day65【概念解析】InnoDB Doublewrite Buffer",
+        "status": "Published",
+        "urlname": "5f02c699-29b2-4c1a-8464-a802364e6024",
+        "updated": "2023-11-27 02:41:00"
+      },
+      "catalog": [
+        {
+          "title": "行业概念",
+          "doc_id": "5f02c699-29b2-4c1a-8464-a802364e6024"
+        }
+      ],
+      "body": "",
+      "realName": "Day65【概念解析】InnoDB Doublewrite Buffer",
+      "relativePath": "/行业概念/Day65【概念解析】InnoDB Doublewrite Buffer.md"
     }
   ],
   "catalog": [
+    {
+      "object": "page",
+      "id": "5f02c699-29b2-4c1a-8464-a802364e6024",
+      "created_time": "2023-11-26T03:33:00.000Z",
+      "last_edited_time": "2023-11-27T02:41:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
+      },
+      "cover": {
+        "type": "external",
+        "external": {
+          "url": "https://image.kuangyichen.com/image/InnoDB%20Doublewrite%20Buffer.webp"
+        }
+      },
+      "icon": {
+        "type": "emoji",
+        "emoji": "🗒️"
+      },
+      "parent": {
+        "type": "database_id",
+        "database_id": "cd6c4967-e5fe-45d2-976d-5d46736ada90"
+      },
+      "archived": false,
+      "properties": {
+        "password": "",
+        "icon": "",
+        "date": "2023-11-25",
+        "type": "Post",
+        "category": "行业概念",
+        "slug": "industry-day65",
+        "tags": [
+          "行业概念",
+          "文字",
+          "思考",
+          "MySQL"
+        ],
+        "summary": "",
+        "title": "Day65【概念解析】InnoDB Doublewrite Buffer",
+        "status": "Published",
+        "urlname": "5f02c699-29b2-4c1a-8464-a802364e6024",
+        "updated": "2023-11-27 02:41:00"
+      },
+      "url": "https://www.notion.so/Day65-InnoDB-Doublewrite-Buffer-5f02c69929b24c1a8464a802364e6024",
+      "public_url": "https://eachenkuang.notion.site/Day65-InnoDB-Doublewrite-Buffer-5f02c69929b24c1a8464a802364e6024"
+    },
     {
       "object": "page",
       "id": "9c82cf19-8fa4-48fa-ad46-77e0652d29c7",
@@ -4528,8 +4612,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/86f96968-f617-4740-a539-e383d7d7f980/jon-tyson-P2aOvMMUJnY-unsplash.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231124%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231124T030851Z&X-Amz-Expires=3600&X-Amz-Signature=4ac4942d08be03d87725fdf64d33d94b2e1d8b5ab6567b7e04e830372a3b7434&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-24T04:08:51.656Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/86f96968-f617-4740-a539-e383d7d7f980/jon-tyson-P2aOvMMUJnY-unsplash.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231127%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231127T024349Z&X-Amz-Expires=3600&X-Amz-Signature=3ea6d5ff4a9543de0a58ace50c80d96bcdae849c581580699a7e640536609ec2&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-27T03:43:49.605Z"
         }
       },
       "icon": {
@@ -5424,8 +5508,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/85f6c012-2895-49af-99a2-3e005710adbc/cover_%281%29.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231124%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231124T030851Z&X-Amz-Expires=3600&X-Amz-Signature=253d7224687321ea44d78f96832d96f10647a6376a779f9b9569395bf6d8a372&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-24T04:08:51.661Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/85f6c012-2895-49af-99a2-3e005710adbc/cover_%281%29.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231127%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231127T024349Z&X-Amz-Expires=3600&X-Amz-Signature=51df2aab7f41ef10faf10fe05c9b42204efc8eb76b4bc454c1314689206cd865&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-27T03:43:49.609Z"
         }
       },
       "icon": {
@@ -7244,8 +7328,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231124%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231124T030851Z&X-Amz-Expires=3600&X-Amz-Signature=c862e3571a3d17ce64605f0c9fd84c0961b272dd18b987784e456dbcd03cdfcc&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-24T04:08:51.671Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231127%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231127T024349Z&X-Amz-Expires=3600&X-Amz-Signature=3f0f36b7c92fc255267ac08edb6ebe62b2a7f85eb8b0f34f03e98be2852e6277&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-27T03:43:49.615Z"
         }
       },
       "icon": {
@@ -7295,8 +7379,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231124%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231124T030851Z&X-Amz-Expires=3600&X-Amz-Signature=c862e3571a3d17ce64605f0c9fd84c0961b272dd18b987784e456dbcd03cdfcc&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-24T04:08:51.671Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231127%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231127T024349Z&X-Amz-Expires=3600&X-Amz-Signature=3f0f36b7c92fc255267ac08edb6ebe62b2a7f85eb8b0f34f03e98be2852e6277&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-27T03:43:49.616Z"
         }
       },
       "icon": {
@@ -7345,8 +7429,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231124%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231124T030851Z&X-Amz-Expires=3600&X-Amz-Signature=c862e3571a3d17ce64605f0c9fd84c0961b272dd18b987784e456dbcd03cdfcc&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-24T04:08:51.672Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231127%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231127T024349Z&X-Amz-Expires=3600&X-Amz-Signature=3f0f36b7c92fc255267ac08edb6ebe62b2a7f85eb8b0f34f03e98be2852e6277&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-27T03:43:49.622Z"
         }
       },
       "icon": {
@@ -7395,8 +7479,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231124%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231124T030851Z&X-Amz-Expires=3600&X-Amz-Signature=c862e3571a3d17ce64605f0c9fd84c0961b272dd18b987784e456dbcd03cdfcc&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-24T04:08:51.672Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231127%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231127T024349Z&X-Amz-Expires=3600&X-Amz-Signature=3f0f36b7c92fc255267ac08edb6ebe62b2a7f85eb8b0f34f03e98be2852e6277&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-27T03:43:49.616Z"
         }
       },
       "icon": {
@@ -7445,8 +7529,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231124%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231124T030851Z&X-Amz-Expires=3600&X-Amz-Signature=c862e3571a3d17ce64605f0c9fd84c0961b272dd18b987784e456dbcd03cdfcc&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-24T04:08:51.673Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231127%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231127T024349Z&X-Amz-Expires=3600&X-Amz-Signature=3f0f36b7c92fc255267ac08edb6ebe62b2a7f85eb8b0f34f03e98be2852e6277&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-27T03:43:49.622Z"
         }
       },
       "icon": {
@@ -7495,8 +7579,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231124%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231124T030851Z&X-Amz-Expires=3600&X-Amz-Signature=c862e3571a3d17ce64605f0c9fd84c0961b272dd18b987784e456dbcd03cdfcc&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-24T04:08:51.673Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231127%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231127T024349Z&X-Amz-Expires=3600&X-Amz-Signature=3f0f36b7c92fc255267ac08edb6ebe62b2a7f85eb8b0f34f03e98be2852e6277&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-27T03:43:49.616Z"
         }
       },
       "icon": {
@@ -7545,8 +7629,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231124%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231124T030851Z&X-Amz-Expires=3600&X-Amz-Signature=c862e3571a3d17ce64605f0c9fd84c0961b272dd18b987784e456dbcd03cdfcc&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-24T04:08:51.673Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231127%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231127T024349Z&X-Amz-Expires=3600&X-Amz-Signature=3f0f36b7c92fc255267ac08edb6ebe62b2a7f85eb8b0f34f03e98be2852e6277&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-27T03:43:49.616Z"
         }
       },
       "icon": {
@@ -7595,8 +7679,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231124%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231124T030851Z&X-Amz-Expires=3600&X-Amz-Signature=c862e3571a3d17ce64605f0c9fd84c0961b272dd18b987784e456dbcd03cdfcc&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-24T04:08:51.674Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231127%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231127T024349Z&X-Amz-Expires=3600&X-Amz-Signature=3f0f36b7c92fc255267ac08edb6ebe62b2a7f85eb8b0f34f03e98be2852e6277&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-27T03:43:49.617Z"
         }
       },
       "icon": {
@@ -7645,8 +7729,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231124%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231124T030851Z&X-Amz-Expires=3600&X-Amz-Signature=c862e3571a3d17ce64605f0c9fd84c0961b272dd18b987784e456dbcd03cdfcc&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-24T04:08:51.674Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231127%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231127T024349Z&X-Amz-Expires=3600&X-Amz-Signature=3f0f36b7c92fc255267ac08edb6ebe62b2a7f85eb8b0f34f03e98be2852e6277&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-27T03:43:49.617Z"
         }
       },
       "icon": {
@@ -7695,8 +7779,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231124%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231124T030851Z&X-Amz-Expires=3600&X-Amz-Signature=c862e3571a3d17ce64605f0c9fd84c0961b272dd18b987784e456dbcd03cdfcc&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-24T04:08:51.679Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231127%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231127T024349Z&X-Amz-Expires=3600&X-Amz-Signature=3f0f36b7c92fc255267ac08edb6ebe62b2a7f85eb8b0f34f03e98be2852e6277&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-27T03:43:49.617Z"
         }
       },
       "icon": {
@@ -7745,8 +7829,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231124%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231124T030851Z&X-Amz-Expires=3600&X-Amz-Signature=c862e3571a3d17ce64605f0c9fd84c0961b272dd18b987784e456dbcd03cdfcc&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-24T04:08:51.679Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231127%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231127T024349Z&X-Amz-Expires=3600&X-Amz-Signature=3f0f36b7c92fc255267ac08edb6ebe62b2a7f85eb8b0f34f03e98be2852e6277&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-27T03:43:49.618Z"
         }
       },
       "icon": {
@@ -7795,8 +7879,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231124%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231124T030851Z&X-Amz-Expires=3600&X-Amz-Signature=c862e3571a3d17ce64605f0c9fd84c0961b272dd18b987784e456dbcd03cdfcc&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-24T04:08:51.674Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231127%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231127T024349Z&X-Amz-Expires=3600&X-Amz-Signature=3f0f36b7c92fc255267ac08edb6ebe62b2a7f85eb8b0f34f03e98be2852e6277&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-27T03:43:49.618Z"
         }
       },
       "icon": {
@@ -7894,8 +7978,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/bfb30b48-50c3-459a-9cb3-a4c5cfb36c1e/mysql-like.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231124%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231124T030851Z&X-Amz-Expires=3600&X-Amz-Signature=b03d44cba8305715754150df456859e9caa72668186cbdd65947c16cec0e10b3&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-24T04:08:51.675Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/bfb30b48-50c3-459a-9cb3-a4c5cfb36c1e/mysql-like.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231127%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231127T024349Z&X-Amz-Expires=3600&X-Amz-Signature=804378ab74e324f894862c3866506ddec90019a4d4b57c962fbb349a23a5954c&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-27T03:43:49.618Z"
         }
       },
       "icon": {
@@ -8283,8 +8367,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/33d23e03-f43d-4c01-84ae-9b4733c2aad2/redis.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231124%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231124T030851Z&X-Amz-Expires=3600&X-Amz-Signature=5cc055be3ff8bdc8aeee57d0d133622bef41def1d6fd42d3bde76e4712645a8c&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-11-24T04:08:51.680Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/33d23e03-f43d-4c01-84ae-9b4733c2aad2/redis.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231127%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231127T024349Z&X-Amz-Expires=3600&X-Amz-Signature=d623c0a478168c8991f1ea1f73147e49b317d4f26585d98707221b57eea4baa1&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-11-27T03:43:49.814Z"
         }
       },
       "icon": {
