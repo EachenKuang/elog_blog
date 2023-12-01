@@ -14,7 +14,7 @@ summary: ""
 title: Day70【概念解析】InnoDB File-Per-Table Tablespace
 status: Published
 urlname: 8c2141a8-6880-47be-9287-25410702723b
-updated: "2023-11-30 04:49:00"
+updated: "2023-12-01 12:08:00"
 ---
 
 # 整理定义
