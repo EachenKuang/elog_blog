@@ -14,7 +14,7 @@ summary: ""
 title: Day74【概念解析】InnoDB 锁
 status: Published
 urlname: 60471d1c-ad80-4eae-aafc-d697a4ce008d
-updated: "2023-12-06 11:58:00"
+updated: "2023-12-07 12:01:00"
 ---
 
 # 整理定义
