@@ -3729,29 +3729,6 @@
       "relativePath": "/行业概念/Day74【概念解析】InnoDB 锁.md"
     },
     {
-      "id": "0974b66c-20cc-4ef3-8069-a26dc4bc93b5",
-      "doc_id": "0974b66c-20cc-4ef3-8069-a26dc4bc93b5",
-      "updated": 1701863760000,
-      "body_original": "\n> 😀 这里写文章的前言：  \n> 一个简单的开头,简述这篇文章讨论的问题、目标、人物、背景是什么？并简述你给出的答案。  \n> 可以说说你的故事：阻碍、努力、结果成果，意外与转折。\n\n\n# 📝 主旨内容\n\n\n## 观点1\n\n\n> 引用的话语\n\n\n## 观点2\n\n\n> 引用的话语\n\n\n# 🤗 总结归纳\n\n\n总结文章的内容\n\n\n# 📎 参考文章\n\n- 一些引用\n- 引用文章\n\n> 💡 有关Notion安装或者使用上的问题，欢迎您在底部评论区留言，一起交流~\n\n",
-      "properties": {
-        "password": "",
-        "icon": "",
-        "date": "2023-12-06 11:56:00",
-        "type": "Post",
-        "category": "",
-        "slug": "",
-        "tags": [],
-        "summary": "",
-        "title": "Article Template",
-        "status": "Draft",
-        "urlname": "0974b66c-20cc-4ef3-8069-a26dc4bc93b5",
-        "updated": "2023-12-06 11:56:00"
-      },
-      "body": "",
-      "realName": "Article Template",
-      "relativePath": "/Article Template.md"
-    },
-    {
       "id": "7ab75082-9d83-4342-9e76-eaf9676b0d76",
       "doc_id": "7ab75082-9d83-4342-9e76-eaf9676b0d76",
       "updated": 1701950460000,
@@ -3818,9 +3795,91 @@
       "body": "",
       "realName": "Day76 【概念解析】 Intention Lock",
       "relativePath": "/行业概念/Day76 【概念解析】 Intention Lock.md"
+    },
+    {
+      "id": "da23251d-5135-46d2-be88-ce55299e6d27",
+      "doc_id": "da23251d-5135-46d2-be88-ce55299e6d27",
+      "updated": 1701952800000,
+      "body_original": "\n# 整理定义\n\n\n**间隙锁（Gap Lock）**\n\n\n间隙锁是对索引记录之间的间隙的锁定，或者是对第一个索引记录之前或最后一个索引记录之后的间隙的锁定。例如，语句 `SELECT c1 FROM t WHERE c1 BETWEEN 10 and 20 FOR UPDATE;` 阻止其他事务在列 t.c1 中插入值 15，无论该列中是否已经存在该值，因为锁定了范围内所有现有值之间的间隙。\n\n\n间隙可能跨越单个索引值、多个索引值，甚至可能是空的。\n\n\n# 复述展开\n\n\n间隙锁是性能和并发之间权衡的一部分，在某些事务隔离级别中使用，在其他级别中则不使用。\n\n\n对于使用唯一索引搜索唯一行的语句，不需要间隙锁定。（这不包括搜索条件仅包含多列唯一索引中的一些列的情况；在这种情况下，会发生间隙锁定。）例如，如果 id 列有唯一索引，以下语句仅对具有 id 值 100 的行使用索引记录锁，并且不关心其他会话是否在前面的间隙中插入行：\n\n\n```sql\nSELECT * FROM child WHERE id = 100;\n```\n\n\n如果 id 没有索引或有非唯一索引，该语句确实会锁定前面的间隙。\n\n\n此外，不同的事务可以在同一个间隙上持有冲突的锁。例如，事务 A 可以在一个间隙上持有共享间隙锁（gap S-lock），而事务 B 在同一个间隙上持有排他间隙锁（gap X-lock）。允许冲突的间隙锁存在的原因是，如果一个记录从索引中清除，不同事务在该记录上持有的间隙锁必须合并。\n\n\nInnoDB 中的间隙锁是“纯粹抑制性的”，这意味着它们的唯一目的是防止其他事务向间隙中插入。间隙锁可以共存。一个事务持有的间隙锁不会阻止另一个事务在同一个间隙上持有间隙锁。共享和排他间隙锁之间没有区别。它们不会相互冲突，并且它们执行相同的功能。\n\n\n可以显式地禁用间隙锁。如果你将事务隔离级别更改为 READ COMMITTED，就会发生这种情况。在这种情况下，间隙锁对搜索和索引扫描被禁用，仅用于外键约束检查和重复键检查。\n\n\n使用 READ COMMITTED 隔离级别还有其他一些效果。MySQL 在评估 WHERE 条件后会释放非匹配行的记录锁。对于 UPDATE 语句，InnoDB 执行“半一致性”读取，这样它就会返回最新的提交版本给 MySQL，以便 MySQL 可以确定行是否与 UPDATE 的 WHERE 条件匹配。\n\n\n# 总结\n\n\n间隙锁是数据库中用于管理并发和维护数据一致性的一种锁机制。它们主要用于防止事务在索引记录之间的间隙中插入数据，从而可能影响其他事务的查询或更新操作。间隙锁对于保持数据的隔离性和一致性至关重要，尤其是在可重复读（REPEATABLE READ）隔离级别下。\n\n\n在唯一索引的情况下，间隙锁通常不是必需的，因为唯一性保证了不会有重复的值插入。然而，如果索引不是唯一的，或者查询条件不包括所有的唯一索引列，间隙锁可能会被使用。\n\n\n间隙锁可以是共享的或排他的，但在 InnoDB 中，这两种类型的间隙锁实际上是相同的，因为它们都是为了防止数据插入到间隙中。不同事务可以在同一个间隙上持有间隙锁，而不会相互冲突。\n\n\n在 READ COMMITTED 隔离级别下，间隙锁的使用被限制，仅在特定情况下（如外键检查和重复键检查）才会使用。此外，这个隔离级别还允许在确定行不匹配 WHERE 条件后立即释放记录锁，以及在 UPDATE 操作中使用半一致性读取，这些都有助于提高并发性能，但可能会牺牲一定程度的数据一致性。\n\n",
+      "properties": {
+        "password": "",
+        "icon": "",
+        "date": "2023-12-07",
+        "type": "Post",
+        "category": "行业概念",
+        "slug": "industry-day77",
+        "tags": [
+          "行业概念",
+          "文字",
+          "思考"
+        ],
+        "summary": "",
+        "title": "Day77【概念解析】Gap Lock",
+        "status": "Published",
+        "urlname": "da23251d-5135-46d2-be88-ce55299e6d27",
+        "updated": "2023-12-07 12:40:00"
+      },
+      "catalog": [
+        {
+          "title": "行业概念",
+          "doc_id": "da23251d-5135-46d2-be88-ce55299e6d27"
+        }
+      ],
+      "body": "",
+      "realName": "Day77【概念解析】Gap Lock",
+      "relativePath": "/行业概念/Day77【概念解析】Gap Lock.md"
     }
   ],
   "catalog": [
+    {
+      "object": "page",
+      "id": "da23251d-5135-46d2-be88-ce55299e6d27",
+      "created_time": "2023-12-07T12:39:00.000Z",
+      "last_edited_time": "2023-12-07T12:40:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
+      },
+      "cover": {
+        "type": "external",
+        "external": {
+          "url": "https://image.kuangyichen.com/image/gap%20lock.webp"
+        }
+      },
+      "icon": {
+        "type": "emoji",
+        "emoji": "🗒️"
+      },
+      "parent": {
+        "type": "database_id",
+        "database_id": "cd6c4967-e5fe-45d2-976d-5d46736ada90"
+      },
+      "archived": false,
+      "properties": {
+        "password": "",
+        "icon": "",
+        "date": "2023-12-07",
+        "type": "Post",
+        "category": "行业概念",
+        "slug": "industry-day77",
+        "tags": [
+          "行业概念",
+          "文字",
+          "思考"
+        ],
+        "summary": "",
+        "title": "Day77【概念解析】Gap Lock",
+        "status": "Published",
+        "urlname": "da23251d-5135-46d2-be88-ce55299e6d27",
+        "updated": "2023-12-07 12:40:00"
+      },
+      "url": "https://www.notion.so/Day77-Gap-Lock-da23251d513546d2be88ce55299e6d27",
+      "public_url": "https://eachenkuang.notion.site/Day77-Gap-Lock-da23251d513546d2be88ce55299e6d27"
+    },
     {
       "object": "page",
       "id": "655028a0-9cbb-4736-bf8f-ad946efae144",
@@ -3970,51 +4029,6 @@
       },
       "url": "https://www.notion.so/Day74-InnoDB-60471d1cad804eaeaafcd697a4ce008d",
       "public_url": "https://eachenkuang.notion.site/Day74-InnoDB-60471d1cad804eaeaafcd697a4ce008d"
-    },
-    {
-      "object": "page",
-      "id": "0974b66c-20cc-4ef3-8069-a26dc4bc93b5",
-      "created_time": "2023-12-06T11:56:00.000Z",
-      "last_edited_time": "2023-12-06T11:56:00.000Z",
-      "created_by": {
-        "object": "user",
-        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
-      },
-      "last_edited_by": {
-        "object": "user",
-        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
-      },
-      "cover": {
-        "type": "external",
-        "external": {
-          "url": "https://source.unsplash.com/random/720x480/?encryption"
-        }
-      },
-      "icon": {
-        "type": "emoji",
-        "emoji": "🗒️"
-      },
-      "parent": {
-        "type": "database_id",
-        "database_id": "cd6c4967-e5fe-45d2-976d-5d46736ada90"
-      },
-      "archived": false,
-      "properties": {
-        "password": "",
-        "icon": "",
-        "date": "2023-12-06 11:56:00",
-        "type": "Post",
-        "category": "",
-        "slug": "",
-        "tags": [],
-        "summary": "",
-        "title": "Article Template",
-        "status": "Draft",
-        "urlname": "0974b66c-20cc-4ef3-8069-a26dc4bc93b5",
-        "updated": "2023-12-06 11:56:00"
-      },
-      "url": "https://www.notion.so/Article-Template-0974b66c20cc4ef38069a26dc4bc93b5",
-      "public_url": "https://eachenkuang.notion.site/Article-Template-0974b66c20cc4ef38069a26dc4bc93b5"
     },
     {
       "object": "page",
@@ -5680,8 +5694,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/86f96968-f617-4740-a539-e383d7d7f980/jon-tyson-P2aOvMMUJnY-unsplash.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T120423Z&X-Amz-Expires=3600&X-Amz-Signature=da89a7f2e5aca4d38074e57b857d518581a6d5678eb44fcf49ec483a4175a1ff&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:04:23.910Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/86f96968-f617-4740-a539-e383d7d7f980/jon-tyson-P2aOvMMUJnY-unsplash.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124156Z&X-Amz-Expires=3600&X-Amz-Signature=169aa0fa4e4e6e202389b6bff7f289b6f4adf5645444e5956b67ea3b28e8ba03&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-07T13:41:56.812Z"
         }
       },
       "icon": {
@@ -6575,8 +6589,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/85f6c012-2895-49af-99a2-3e005710adbc/cover_%281%29.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T120423Z&X-Amz-Expires=3600&X-Amz-Signature=58f0bfef95783159edf9fc4c2231b4af1b5b5eed256c62bdae7c772270b8c12d&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:04:23.900Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/85f6c012-2895-49af-99a2-3e005710adbc/cover_%281%29.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124156Z&X-Amz-Expires=3600&X-Amz-Signature=ceb4ce7ab2cb37bd6e2a6dd63a9eeb98d9058d1ad3eb5b22a73006973729d46a&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-07T13:41:56.805Z"
         }
       },
       "icon": {
@@ -8394,8 +8408,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T120423Z&X-Amz-Expires=3600&X-Amz-Signature=50d0105a9e11cec7a8e739472302724f04394177e9c4d7e4f1a53192534ca7d5&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:04:23.906Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124156Z&X-Amz-Expires=3600&X-Amz-Signature=fc7db6eb420a0862bf4dbed2fbc6b846fe1611b99cbbc8ac48fca6774cff0314&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-07T13:41:56.810Z"
         }
       },
       "icon": {
@@ -8445,8 +8459,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T120423Z&X-Amz-Expires=3600&X-Amz-Signature=50d0105a9e11cec7a8e739472302724f04394177e9c4d7e4f1a53192534ca7d5&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:04:23.906Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124156Z&X-Amz-Expires=3600&X-Amz-Signature=fc7db6eb420a0862bf4dbed2fbc6b846fe1611b99cbbc8ac48fca6774cff0314&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-07T13:41:56.815Z"
         }
       },
       "icon": {
@@ -8495,8 +8509,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T120423Z&X-Amz-Expires=3600&X-Amz-Signature=50d0105a9e11cec7a8e739472302724f04394177e9c4d7e4f1a53192534ca7d5&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:04:23.906Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124156Z&X-Amz-Expires=3600&X-Amz-Signature=fc7db6eb420a0862bf4dbed2fbc6b846fe1611b99cbbc8ac48fca6774cff0314&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-07T13:41:56.810Z"
         }
       },
       "icon": {
@@ -8545,8 +8559,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T120423Z&X-Amz-Expires=3600&X-Amz-Signature=50d0105a9e11cec7a8e739472302724f04394177e9c4d7e4f1a53192534ca7d5&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:04:23.912Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124156Z&X-Amz-Expires=3600&X-Amz-Signature=fc7db6eb420a0862bf4dbed2fbc6b846fe1611b99cbbc8ac48fca6774cff0314&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-07T13:41:56.815Z"
         }
       },
       "icon": {
@@ -8595,8 +8609,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T120423Z&X-Amz-Expires=3600&X-Amz-Signature=50d0105a9e11cec7a8e739472302724f04394177e9c4d7e4f1a53192534ca7d5&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:04:23.907Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124156Z&X-Amz-Expires=3600&X-Amz-Signature=fc7db6eb420a0862bf4dbed2fbc6b846fe1611b99cbbc8ac48fca6774cff0314&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-07T13:41:56.810Z"
         }
       },
       "icon": {
@@ -8645,8 +8659,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T120423Z&X-Amz-Expires=3600&X-Amz-Signature=50d0105a9e11cec7a8e739472302724f04394177e9c4d7e4f1a53192534ca7d5&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:04:23.907Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124156Z&X-Amz-Expires=3600&X-Amz-Signature=fc7db6eb420a0862bf4dbed2fbc6b846fe1611b99cbbc8ac48fca6774cff0314&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-07T13:41:56.811Z"
         }
       },
       "icon": {
@@ -8695,8 +8709,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T120423Z&X-Amz-Expires=3600&X-Amz-Signature=50d0105a9e11cec7a8e739472302724f04394177e9c4d7e4f1a53192534ca7d5&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:04:23.907Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124156Z&X-Amz-Expires=3600&X-Amz-Signature=fc7db6eb420a0862bf4dbed2fbc6b846fe1611b99cbbc8ac48fca6774cff0314&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-07T13:41:56.811Z"
         }
       },
       "icon": {
@@ -8745,8 +8759,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T120423Z&X-Amz-Expires=3600&X-Amz-Signature=50d0105a9e11cec7a8e739472302724f04394177e9c4d7e4f1a53192534ca7d5&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:04:23.913Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124156Z&X-Amz-Expires=3600&X-Amz-Signature=fc7db6eb420a0862bf4dbed2fbc6b846fe1611b99cbbc8ac48fca6774cff0314&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-07T13:41:56.811Z"
         }
       },
       "icon": {
@@ -8795,8 +8809,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T120424Z&X-Amz-Expires=3600&X-Amz-Signature=e6be82e040e4b9fe752f8ee744f19af63ff1ac883ab0a4dd42502b1350424111&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:04:24.152Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124157Z&X-Amz-Expires=3600&X-Amz-Signature=ccbc7714eb035b48d3fe6da0a08cd241ec3e8690b87cf451c5bec0cadac0181b&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-07T13:41:57.063Z"
         }
       },
       "icon": {
@@ -8845,8 +8859,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T120424Z&X-Amz-Expires=3600&X-Amz-Signature=e6be82e040e4b9fe752f8ee744f19af63ff1ac883ab0a4dd42502b1350424111&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:04:24.152Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124157Z&X-Amz-Expires=3600&X-Amz-Signature=ccbc7714eb035b48d3fe6da0a08cd241ec3e8690b87cf451c5bec0cadac0181b&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-07T13:41:57.059Z"
         }
       },
       "icon": {
@@ -8895,8 +8909,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T120424Z&X-Amz-Expires=3600&X-Amz-Signature=e6be82e040e4b9fe752f8ee744f19af63ff1ac883ab0a4dd42502b1350424111&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:04:24.152Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124157Z&X-Amz-Expires=3600&X-Amz-Signature=ccbc7714eb035b48d3fe6da0a08cd241ec3e8690b87cf451c5bec0cadac0181b&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-07T13:41:57.063Z"
         }
       },
       "icon": {
@@ -8945,8 +8959,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T120424Z&X-Amz-Expires=3600&X-Amz-Signature=e6be82e040e4b9fe752f8ee744f19af63ff1ac883ab0a4dd42502b1350424111&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:04:24.155Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124157Z&X-Amz-Expires=3600&X-Amz-Signature=ccbc7714eb035b48d3fe6da0a08cd241ec3e8690b87cf451c5bec0cadac0181b&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-07T13:41:57.060Z"
         }
       },
       "icon": {
@@ -9044,8 +9058,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/bfb30b48-50c3-459a-9cb3-a4c5cfb36c1e/mysql-like.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T120424Z&X-Amz-Expires=3600&X-Amz-Signature=2cbb1b97882cb1c468ad7968bc181d0bbfe5fe4e10e9a8591609932bda4b24ff&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:04:24.155Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/bfb30b48-50c3-459a-9cb3-a4c5cfb36c1e/mysql-like.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124157Z&X-Amz-Expires=3600&X-Amz-Signature=405e8557f0d17dd8054a862c93cda277a53a88018c8f046799725e0f6a28e687&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-07T13:41:57.060Z"
         }
       },
       "icon": {
@@ -9433,8 +9447,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/33d23e03-f43d-4c01-84ae-9b4733c2aad2/redis.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T120424Z&X-Amz-Expires=3600&X-Amz-Signature=23236e57d1f99a175b3803df28b2a61eb5f0ac08f1460b60b1cf3bce00b89f6e&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:04:24.155Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/33d23e03-f43d-4c01-84ae-9b4733c2aad2/redis.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124157Z&X-Amz-Expires=3600&X-Amz-Signature=b23fefe439dbe0ce45d53d94f9c96d38f2bbacdd767d92ba38f15a07cb335434&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-07T13:41:57.063Z"
         }
       },
       "icon": {
