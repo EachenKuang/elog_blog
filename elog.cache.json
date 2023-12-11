@@ -3799,7 +3799,7 @@
     {
       "id": "da23251d-5135-46d2-be88-ce55299e6d27",
       "doc_id": "da23251d-5135-46d2-be88-ce55299e6d27",
-      "updated": 1701952800000,
+      "updated": 1702270740000,
       "body_original": "\n# 整理定义\n\n\n**间隙锁（Gap Lock）**\n\n\n间隙锁是对索引记录之间的间隙的锁定，或者是对第一个索引记录之前或最后一个索引记录之后的间隙的锁定。例如，语句 `SELECT c1 FROM t WHERE c1 BETWEEN 10 and 20 FOR UPDATE;` 阻止其他事务在列 t.c1 中插入值 15，无论该列中是否已经存在该值，因为锁定了范围内所有现有值之间的间隙。\n\n\n间隙可能跨越单个索引值、多个索引值，甚至可能是空的。\n\n\n# 复述展开\n\n\n间隙锁是性能和并发之间权衡的一部分，在某些事务隔离级别中使用，在其他级别中则不使用。\n\n\n对于使用唯一索引搜索唯一行的语句，不需要间隙锁定。（这不包括搜索条件仅包含多列唯一索引中的一些列的情况；在这种情况下，会发生间隙锁定。）例如，如果 id 列有唯一索引，以下语句仅对具有 id 值 100 的行使用索引记录锁，并且不关心其他会话是否在前面的间隙中插入行：\n\n\n```sql\nSELECT * FROM child WHERE id = 100;\n```\n\n\n如果 id 没有索引或有非唯一索引，该语句确实会锁定前面的间隙。\n\n\n此外，不同的事务可以在同一个间隙上持有冲突的锁。例如，事务 A 可以在一个间隙上持有共享间隙锁（gap S-lock），而事务 B 在同一个间隙上持有排他间隙锁（gap X-lock）。允许冲突的间隙锁存在的原因是，如果一个记录从索引中清除，不同事务在该记录上持有的间隙锁必须合并。\n\n\nInnoDB 中的间隙锁是“纯粹抑制性的”，这意味着它们的唯一目的是防止其他事务向间隙中插入。间隙锁可以共存。一个事务持有的间隙锁不会阻止另一个事务在同一个间隙上持有间隙锁。共享和排他间隙锁之间没有区别。它们不会相互冲突，并且它们执行相同的功能。\n\n\n可以显式地禁用间隙锁。如果你将事务隔离级别更改为 READ COMMITTED，就会发生这种情况。在这种情况下，间隙锁对搜索和索引扫描被禁用，仅用于外键约束检查和重复键检查。\n\n\n使用 READ COMMITTED 隔离级别还有其他一些效果。MySQL 在评估 WHERE 条件后会释放非匹配行的记录锁。对于 UPDATE 语句，InnoDB 执行“半一致性”读取，这样它就会返回最新的提交版本给 MySQL，以便 MySQL 可以确定行是否与 UPDATE 的 WHERE 条件匹配。\n\n\n# 总结\n\n\n间隙锁是数据库中用于管理并发和维护数据一致性的一种锁机制。它们主要用于防止事务在索引记录之间的间隙中插入数据，从而可能影响其他事务的查询或更新操作。间隙锁对于保持数据的隔离性和一致性至关重要，尤其是在可重复读（REPEATABLE READ）隔离级别下。\n\n\n在唯一索引的情况下，间隙锁通常不是必需的，因为唯一性保证了不会有重复的值插入。然而，如果索引不是唯一的，或者查询条件不包括所有的唯一索引列，间隙锁可能会被使用。\n\n\n间隙锁可以是共享的或排他的，但在 InnoDB 中，这两种类型的间隙锁实际上是相同的，因为它们都是为了防止数据插入到间隙中。不同事务可以在同一个间隙上持有间隙锁，而不会相互冲突。\n\n\n在 READ COMMITTED 隔离级别下，间隙锁的使用被限制，仅在特定情况下（如外键检查和重复键检查）才会使用。此外，这个隔离级别还允许在确定行不匹配 WHERE 条件后立即释放记录锁，以及在 UPDATE 操作中使用半一致性读取，这些都有助于提高并发性能，但可能会牺牲一定程度的数据一致性。\n\n",
       "properties": {
         "password": "",
@@ -3811,13 +3811,14 @@
         "tags": [
           "行业概念",
           "文字",
-          "思考"
+          "思考",
+          "MySQL"
         ],
         "summary": "",
         "title": "Day77【概念解析】Gap Lock",
         "status": "Published",
         "urlname": "da23251d-5135-46d2-be88-ce55299e6d27",
-        "updated": "2023-12-07 12:40:00"
+        "updated": "2023-12-11 04:59:00"
       },
       "catalog": [
         {
@@ -3828,14 +3829,334 @@
       "body": "",
       "realName": "Day77【概念解析】Gap Lock",
       "relativePath": "/行业概念/Day77【概念解析】Gap Lock.md"
+    },
+    {
+      "id": "e576558c-e12f-49fa-99ab-5b71add06e02",
+      "doc_id": "e576558c-e12f-49fa-99ab-5b71add06e02",
+      "updated": 1702270980000,
+      "body_original": "\n# 整理定义\n\n\n记录锁（**Record Locks）**\n\n\n> **Record Locks**\n\n\n\tA record lock is a lock on an index record. For example, `SELECT c1 FROM t WHERE c1 = 10 FOR UPDATE;` prevents any other transaction from inserting, updating, or deleting rows where the value of `t.c1` is `10`.\n\n\n\tRecord locks always lock index records, even if a table is defined with no indexes. For such cases, `InnoDB` creates a hidden clustered index and uses this index for record locking.\n\n\n\t————《[MySQL :: MySQL 8.0 Reference Manual :: 15.7.1 InnoDB Locking](https://dev.mysql.com/doc/refman/8.0/en/innodb-locking.html#innodb-record-locks)》\n\n\n记录锁是索引记录上的锁。 例如，SELECT c1 FROM t WHERE c1 = 10 FOR UPDATE； 防止任何其他事务插入、更新或删除 t.c1 值为 10 的行。\n\n\n记录锁始终锁定索引记录，即使表定义为没有索引。 对于这种情况，InnoDB 创建一个隐藏的聚集索引并使用该索引进行记录锁定。\n\n\n# 复述展开\n\n\n### 记录锁的工作原理\n\n\n当事务A尝试修改表中的一行数据时，InnoDB会检查该行是否已经被其他事务锁定：\n\n- 如果没有被锁定，事务A会在该行上放置一个记录锁，并执行修改操作。\n- 如果已经被其他事务锁定，事务A将会等待，直到锁被释放，或者超时（根据InnoDB的超时设置）。\n\n记录锁是排他的（exclusive），这意味着如果事务A在一行数据上持有记录锁，其他事务不能对这行数据进行修改或删除，直到事务A提交或回滚释放锁。\n\n\n### 记录锁与事务隔离级别\n\n\nInnoDB的记录锁行为受到事务隔离级别的影响。MySQL支持四种事务隔离级别：\n\n1. READ UNCOMMITTED（读未提交）\n2. READ COMMITTED（读已提交）\n3. REPEATABLE READ（可重复读，默认级别）\n4. SERIALIZABLE（可串行化）\n\n在REPEATABLE READ级别下，InnoDB会使用next-key锁，这是记录锁和间隙锁的组合，它锁定索引记录并防止在索引记录之间插入新行。而在READ COMMITTED级别下，InnoDB使用的是纯记录锁，不会锁定间隙。\n\n\n### 记录锁的影响\n\n\n记录锁是保证事务安全的重要机制，但它们也可能导致一些问题，如死锁和锁竞争。死锁发生在两个或多个事务相互等待对方释放锁的情况下，这会导致事务无法继续执行。InnoDB有自己的死锁检测机制来处理这种情况，通常是通过回滚其中一个事务来解锁。\n\n\n锁竞争发生在高并发环境中，许多事务试图同时锁定同一数据行。这可能会导致性能下降，因为事务必须等待其他事务释放锁。\n\n\n### 最佳实践\n\n\n为了最大限度地减少记录锁带来的性能问题和死锁的可能性，开发者应该遵循一些最佳实践：\n\n- 尽量减少事务的大小和持续时间，以减少锁定资源的时间。\n- 在可能的情况下，使用乐观锁定而不是悲观锁定。\n- 设计索引以优化查询，减少需要锁定的行数。\n- 避免不必要的全表扫描，这可能会导致大量的行被锁定。\n- 使用合适的事务隔离级别，以平衡一致性需求和性能。\n\n### 记录锁的性能优化\n\n\n虽然记录锁对于事务的一致性至关重要，但不恰当的使用可能会导致性能问题。为了优化性能，可以采取以下措施：\n\n- **索引优化**：确保查询都能利用到索引，这样可以减少锁定的数据量，因为InnoDB只会锁定查询触及到的索引记录。\n- **查询优化**：优化查询逻辑，避免复杂的关联查询，这样可以减少锁的数量和持续时间。\n- **分批处理**：对于大量数据的更新和删除操作，可以分批进行，每次处理一小部分数据，这样可以减少锁定资源的时间。\n- **锁定粒度控制**：在某些情况下，可以通过锁定更大的数据粒度（如表锁）来减少锁的数量，但这通常会降低并发性。\n\n# 理解体会\n\n\nInnoDB的记录锁是一个强大的工具，用于确保事务的一致性和隔离性。然而，它们需要谨慎使用，以避免性能降低和死锁问题。理解记录锁的工作原理和它们如何与InnoDB的其他锁类型（如间隙锁和临键锁）相互作用，对于数据库管理员和开发者来说至关重要。\n\n\n**记录锁一般会和间隙锁一起使用，他们组合起来也就是临键锁。**\n\n\n在InnoDB中，记录锁通常与间隙锁和临键锁一起使用，以实现不同的隔离级别。临键锁是记录锁和间隙锁的组合，它不仅锁定了一条记录，还锁定了该记录之前的间隙。这种锁的机制在**可重复读（REPEATABLE READ）**隔离级别下是默认行为，它可以防止幻读——即在一个事务中两次执行同样的查询却得到不同结果的现象。\n\n",
+      "properties": {
+        "password": "",
+        "icon": "",
+        "date": "2023-12-08",
+        "type": "Post",
+        "category": "行业概念",
+        "slug": "industry-day78",
+        "tags": [
+          "行业概念",
+          "文字",
+          "思考",
+          "MySQL"
+        ],
+        "summary": "",
+        "title": "Day78【概念解析】Record Lock",
+        "status": "Published",
+        "urlname": "e576558c-e12f-49fa-99ab-5b71add06e02",
+        "updated": "2023-12-11 05:03:00"
+      },
+      "catalog": [
+        {
+          "title": "行业概念",
+          "doc_id": "e576558c-e12f-49fa-99ab-5b71add06e02"
+        }
+      ],
+      "body": "",
+      "realName": "Day78【概念解析】Record Lock",
+      "relativePath": "/行业概念/Day78【概念解析】Record Lock.md"
+    },
+    {
+      "id": "2a4573be-2451-438d-89b2-1b5b4906d687",
+      "doc_id": "2a4573be-2451-438d-89b2-1b5b4906d687",
+      "updated": 1702270980000,
+      "body_original": "\n# 整理定义\n\n\nSQL中的三种语言，DML，DDL，DCL。\n\n\n**DML**(Data manipulation language) 数据操作语言，包含 `INSERT` `UPDATE` `DELETE` `SELECT` 的SQL语句，统称为DML。\n\n\n**DDL**(Data definition language) 数据定义语言，包含 `CREATE` `ALTER` `DROP` `TRUNCATE` 的SQL语句，是用于管理数据库本身而不是单独的表行的SQL语句。\n\n\n**DCL**(Data control language) 数据控制语言，包含 `GRANT` 与 `REVOKE`，是管理权限的SQL语句\n\n\n> **DML(**Data manipulation language**)**\n\n\n\tData manipulation language, a set of _**SQL**_ statements for performing [`INSERT`](https://dev.mysql.com/doc/refman/8.0/en/insert.html), [`UPDATE`](https://dev.mysql.com/doc/refman/8.0/en/update.html), and [`DELETE`](https://dev.mysql.com/doc/refman/8.0/en/delete.html) operations. The [`SELECT`](https://dev.mysql.com/doc/refman/8.0/en/select.html) statement is sometimes considered as a DML statement, because the `SELECT ... FOR UPDATE` form is subject to the same considerations for _**locking**_ as [`INSERT`](https://dev.mysql.com/doc/refman/8.0/en/insert.html), [`UPDATE`](https://dev.mysql.com/doc/refman/8.0/en/update.html), and [`DELETE`](https://dev.mysql.com/doc/refman/8.0/en/delete.html).\n\n\n\tDML statements for an `InnoDB` table operate in the context of a _**transaction**_, so their effects can be _**committed**_ or _**rolled back**_ as a single unit.\n\n\n> **DDL(**Data definition language**)**\n\n\n\tData definition language, a set of _**SQL**_ statements for manipulating the database itself rather than individual table rows. Includes all forms of the `CREATE`, `ALTER`, and `DROP` statements. Also includes the `TRUNCATE` statement, because it works differently than a `DELETE FROM` _**`table_name`**_ statement, even though the ultimate effect is similar.\n\n\n\tDDL statements automatically _**commit**_ the current _**transaction**_; they cannot be _**rolled back**_.\n\n\n> **DCL(**Data control language**)**  \n> Data control language, a set of _**SQL**_ statements for managing privileges. In MySQL, consists of the [`GRANT`](https://dev.mysql.com/doc/refman/8.0/en/grant.html) and [`REVOKE`](https://dev.mysql.com/doc/refman/8.0/en/revoke.html) statements. Contrast with _**DDL**_ and _**DML**_.\n\n\n# 复述展开\n\n\n下面是一个简单的表格，概述了DML、DDL和DCL的定义、区别、使用方式以及示例：\n\n\n| 类别                               | 定义                     | 区别                   | 使用方式                          | 示例                                                                                                                                                                                           |\n| -------------------------------- | ---------------------- | -------------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| DML (Data Manipulation Language) | 用于添加、删除、更新和查询数据库记录的语言。 | 直接与数据记录进行交互，不会改变表结构。 | 通常在常规数据库操作中使用，如插入、更新、删除和查询数据。 | INSERT INTO table_name (column1, column2) VALUES (value1, value2);\nUPDATE table_name SET column1 = value1 WHERE condition;\nDELETE FROM table_name WHERE condition;\nSELECT * FROM table_name; |\n| DDL (Data Definition Language)   | 用于定义和修改数据库结构的语言。       | 改变表结构，如创建或删除表和索引。    | 在数据库设计和建模阶段使用，或者在需要修改表结构时使用。  | CREATE TABLE table_name (column1 datatype, column2 datatype);\nALTER TABLE table_name ADD column_name datatype;\nDROP TABLE table_name;\nCREATE INDEX index_name ON table_name (column_name);   |\n| DCL (Data Control Language)      | 用于控制数据库中的数据访问权限的语言。    | 与数据的安全性、访问权限和控制相关。   | 在需要管理用户权限和控制对数据库对象访问时使用。      | GRANT SELECT ON database.table TO 'user'@'host';\nREVOKE SELECT ON database.table FROM 'user'@'host';                                                                                         |\n\n\n# 理解体会\n\n\n理解这三者的定义以及区别，能够更快地了解不同SQL语句的差异，方便后续对于SQL的操作。\n\n",
+      "properties": {
+        "password": "",
+        "icon": "",
+        "date": "2023-12-10",
+        "type": "Post",
+        "category": "行业概念",
+        "slug": "industry-day80",
+        "tags": [
+          "行业概念",
+          "文字",
+          "思考",
+          "MySQL"
+        ],
+        "summary": "",
+        "title": "Day80【概念解析】 DML，DDL，DCL",
+        "status": "Published",
+        "urlname": "2a4573be-2451-438d-89b2-1b5b4906d687",
+        "updated": "2023-12-11 05:03:00"
+      },
+      "catalog": [
+        {
+          "title": "行业概念",
+          "doc_id": "2a4573be-2451-438d-89b2-1b5b4906d687"
+        }
+      ],
+      "body": "",
+      "realName": "Day80【概念解析】 DML，DDL，DCL",
+      "relativePath": "/行业概念/Day80【概念解析】 DML，DDL，DCL.md"
+    },
+    {
+      "id": "06d5189c-b49b-47ca-a000-b58401fdb847",
+      "doc_id": "06d5189c-b49b-47ca-a000-b58401fdb847",
+      "updated": 1702270980000,
+      "body_original": "\n# 整理定义\n\n\n**临键锁（Next-key Lock）**= Gap Lock + Record Lock\n\n\n临键锁是索引记录上的**记录锁**和索引记录之前的间隙上的**间隙锁**的组合。\n\n\n# 复述展开\n\n\nInnoDB 以这样的方式执行行级锁定：**当它搜索或扫描表索引时，它会在遇到的索引记录上设置共享锁（S锁）或排他锁（X锁）**。 因此，行级锁实际上是索引记录锁。 索引记录上的**临键锁**也会影响该索引记录之前的“间隙”。 也就是说，**临键锁**是索引记录锁加上索引记录之前间隙上的间隙锁。 如果一个会话对索引中的记录 R 具有共享锁或独占锁，则另一个会话无法在索引顺序中紧邻 R 之前的间隙中插入新索引记录。\n\n\n假设索引包含值 10、11、13 和 20。该索引可能的**临键锁**涵盖以下区间，其中圆括号表示排除区间端点，方括号表示包含端点：\n\n\n```sql\n(-∞, 10]\n(10, 11]\n(11, 13]\n(13, 20]\n(20, +∞)\n```\n\n\n对于最后一个间隔，**临键锁**锁定索引中最大值和“supremum”伪记录的值高于索引中的任何值。上确界不是一个真正的索引记录，因此，实际上，这个下一个键锁只锁定最大索引值后面的间隙。\nInnoDB的默认事务隔离级别为 **可重复读（Repeated Read）**。在这种情况下，InnoDB使用**临键锁**进行搜索和索引扫描，这可以防止**幻读**。\n\n\n> 也可以理解为一种特殊的**间隙锁**。通过**临建锁**可以解决`幻读`的问题。 每个数据行上的**非唯一索引列**上都会存在一把**临键锁**，当某个事务持有该数据行的**临键锁**时，会锁住一段**左开右闭区间**的数据。需要强调的一点是，InnoDB 中**行级锁**是基于索引实现的，**临键锁**只与**非唯一索引列**有关，在`唯一索引列（包括主键列）上不存在临键锁`。\n\n\n\t——[MySQL记录锁、间隙锁、临键锁（Next-Key Locks）详解 - 知乎 (zhihu.com)](https://zhuanlan.zhihu.com/p/435113954)\n\n\n|    | 事务A                                                | 事务B                                            |\n| -- | -------------------------------------------------- | ---------------------------------------------- |\n| T1 | `UPDATE table SET name = Vladimir WHERE age = 14;` |                                                |\n| T2 |                                                    | `INSERT INTO table VALUES(100, 19, 'tianqi');` |\n| T3 | commit                                             |                                                |\n| T3 |                                                    | commit                                         |\n\n\nT2会因为T1对 age 为 19的列进行锁定后，将（14，20]的区间进行了锁定\n\n\n很明显，事务 A 在对 age 为 24 的列进行 UPDATE 操作的同时，也获取了（14，20] 这个区间内的临键锁。\n\n\n# 理解体会\n\n\n这里对 **记录锁**、**间隙锁**、**临键锁** 做一个总结\n\n- **InnoDB** 中的**行锁**的实现依赖于**索引**，一旦某个加锁操作没有使用到索引，那么该锁就会退化为`表锁`。\n- **记录锁**存在于包括**主键索引**在内的**唯一索引**中，锁定单条索引记录。\n- **间隙锁**存在于**非唯一索引**中，锁定**开区间**范围内的一段间隔，它是基于**临键锁**实现的。\n",
+      "properties": {
+        "password": "",
+        "icon": "",
+        "date": "2023-12-09",
+        "type": "Post",
+        "category": "行业概念",
+        "slug": "industry-day79",
+        "tags": [
+          "行业概念",
+          "文字",
+          "思考",
+          "MySQL"
+        ],
+        "summary": "",
+        "title": "Day79【概念解析】Next-key Lock",
+        "status": "Published",
+        "urlname": "06d5189c-b49b-47ca-a000-b58401fdb847",
+        "updated": "2023-12-11 05:03:00"
+      },
+      "catalog": [
+        {
+          "title": "行业概念",
+          "doc_id": "06d5189c-b49b-47ca-a000-b58401fdb847"
+        }
+      ],
+      "body": "",
+      "realName": "Day79【概念解析】Next-key Lock",
+      "relativePath": "/行业概念/Day79【概念解析】Next-key Lock.md"
+    },
+    {
+      "id": "ef64726e-d448-4f5f-9b89-8e0bda9a6d93",
+      "doc_id": "ef64726e-d448-4f5f-9b89-8e0bda9a6d93",
+      "updated": 1702038120000,
+      "body_original": "\n> 😀 这里写文章的前言：  \n> 一个简单的开头,简述这篇文章讨论的问题、目标、人物、背景是什么？并简述你给出的答案。  \n> 可以说说你的故事：阻碍、努力、结果成果，意外与转折。\n\n\n# 📝 主旨内容\n\n\n## 观点1\n\n\n> 引用的话语\n\n\n## 观点2\n\n\n> 引用的话语\n\n\n# 🤗 总结归纳\n\n\n总结文章的内容\n\n\n# 📎 参考文章\n\n- 一些引用\n- 引用文章\n\n> 💡 有关Notion安装或者使用上的问题，欢迎您在底部评论区留言，一起交流~\n\n",
+      "properties": {
+        "password": "",
+        "icon": "",
+        "date": "2023-12-08 12:22:00",
+        "type": "Post",
+        "category": "",
+        "slug": "",
+        "tags": [],
+        "summary": "",
+        "title": "Article Template",
+        "status": "Draft",
+        "urlname": "ef64726e-d448-4f5f-9b89-8e0bda9a6d93",
+        "updated": "2023-12-08 12:22:00"
+      },
+      "body": "",
+      "realName": "Article Template",
+      "relativePath": "/Article Template.md"
     }
   ],
   "catalog": [
     {
       "object": "page",
+      "id": "2a4573be-2451-438d-89b2-1b5b4906d687",
+      "created_time": "2023-12-11T04:58:00.000Z",
+      "last_edited_time": "2023-12-11T05:03:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
+      },
+      "cover": {
+        "type": "external",
+        "external": {
+          "url": "https://image.kuangyichen.com/image/DML%20DDL%20DCL.webp"
+        }
+      },
+      "icon": {
+        "type": "emoji",
+        "emoji": "🗒️"
+      },
+      "parent": {
+        "type": "database_id",
+        "database_id": "cd6c4967-e5fe-45d2-976d-5d46736ada90"
+      },
+      "archived": false,
+      "properties": {
+        "password": "",
+        "icon": "",
+        "date": "2023-12-10",
+        "type": "Post",
+        "category": "行业概念",
+        "slug": "industry-day80",
+        "tags": [
+          "行业概念",
+          "文字",
+          "思考",
+          "MySQL"
+        ],
+        "summary": "",
+        "title": "Day80【概念解析】 DML，DDL，DCL",
+        "status": "Published",
+        "urlname": "2a4573be-2451-438d-89b2-1b5b4906d687",
+        "updated": "2023-12-11 05:03:00"
+      },
+      "url": "https://www.notion.so/Day80-DML-DDL-DCL-2a4573be2451438d89b21b5b4906d687",
+      "public_url": "https://eachenkuang.notion.site/Day80-DML-DDL-DCL-2a4573be2451438d89b21b5b4906d687"
+    },
+    {
+      "object": "page",
+      "id": "06d5189c-b49b-47ca-a000-b58401fdb847",
+      "created_time": "2023-12-10T11:31:00.000Z",
+      "last_edited_time": "2023-12-11T05:03:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
+      },
+      "cover": {
+        "type": "external",
+        "external": {
+          "url": "https://image.kuangyichen.com/image/Next-key%20Lock.webp"
+        }
+      },
+      "icon": {
+        "type": "emoji",
+        "emoji": "🗒️"
+      },
+      "parent": {
+        "type": "database_id",
+        "database_id": "cd6c4967-e5fe-45d2-976d-5d46736ada90"
+      },
+      "archived": false,
+      "properties": {
+        "password": "",
+        "icon": "",
+        "date": "2023-12-09",
+        "type": "Post",
+        "category": "行业概念",
+        "slug": "industry-day79",
+        "tags": [
+          "行业概念",
+          "文字",
+          "思考",
+          "MySQL"
+        ],
+        "summary": "",
+        "title": "Day79【概念解析】Next-key Lock",
+        "status": "Published",
+        "urlname": "06d5189c-b49b-47ca-a000-b58401fdb847",
+        "updated": "2023-12-11 05:03:00"
+      },
+      "url": "https://www.notion.so/Day79-Next-key-Lock-06d5189cb49b47caa000b58401fdb847",
+      "public_url": "https://eachenkuang.notion.site/Day79-Next-key-Lock-06d5189cb49b47caa000b58401fdb847"
+    },
+    {
+      "object": "page",
+      "id": "e576558c-e12f-49fa-99ab-5b71add06e02",
+      "created_time": "2023-12-08T12:22:00.000Z",
+      "last_edited_time": "2023-12-11T05:03:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
+      },
+      "cover": {
+        "type": "external",
+        "external": {
+          "url": "https://image.kuangyichen.com/image/Record%20Lock.webp"
+        }
+      },
+      "icon": {
+        "type": "emoji",
+        "emoji": "🗒️"
+      },
+      "parent": {
+        "type": "database_id",
+        "database_id": "cd6c4967-e5fe-45d2-976d-5d46736ada90"
+      },
+      "archived": false,
+      "properties": {
+        "password": "",
+        "icon": "",
+        "date": "2023-12-08",
+        "type": "Post",
+        "category": "行业概念",
+        "slug": "industry-day78",
+        "tags": [
+          "行业概念",
+          "文字",
+          "思考",
+          "MySQL"
+        ],
+        "summary": "",
+        "title": "Day78【概念解析】Record Lock",
+        "status": "Published",
+        "urlname": "e576558c-e12f-49fa-99ab-5b71add06e02",
+        "updated": "2023-12-11 05:03:00"
+      },
+      "url": "https://www.notion.so/Day78-Record-Lock-e576558ce12f49fa99ab5b71add06e02",
+      "public_url": "https://eachenkuang.notion.site/Day78-Record-Lock-e576558ce12f49fa99ab5b71add06e02"
+    },
+    {
+      "object": "page",
+      "id": "ef64726e-d448-4f5f-9b89-8e0bda9a6d93",
+      "created_time": "2023-12-08T12:22:00.000Z",
+      "last_edited_time": "2023-12-08T12:22:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
+      },
+      "cover": {
+        "type": "external",
+        "external": {
+          "url": "https://source.unsplash.com/random/720x480/?encryption"
+        }
+      },
+      "icon": {
+        "type": "emoji",
+        "emoji": "🗒️"
+      },
+      "parent": {
+        "type": "database_id",
+        "database_id": "cd6c4967-e5fe-45d2-976d-5d46736ada90"
+      },
+      "archived": false,
+      "properties": {
+        "password": "",
+        "icon": "",
+        "date": "2023-12-08 12:22:00",
+        "type": "Post",
+        "category": "",
+        "slug": "",
+        "tags": [],
+        "summary": "",
+        "title": "Article Template",
+        "status": "Draft",
+        "urlname": "ef64726e-d448-4f5f-9b89-8e0bda9a6d93",
+        "updated": "2023-12-08 12:22:00"
+      },
+      "url": "https://www.notion.so/Article-Template-ef64726ed4484f5f9b898e0bda9a6d93",
+      "public_url": "https://eachenkuang.notion.site/Article-Template-ef64726ed4484f5f9b898e0bda9a6d93"
+    },
+    {
+      "object": "page",
       "id": "da23251d-5135-46d2-be88-ce55299e6d27",
       "created_time": "2023-12-07T12:39:00.000Z",
-      "last_edited_time": "2023-12-07T12:40:00.000Z",
+      "last_edited_time": "2023-12-11T04:59:00.000Z",
       "created_by": {
         "object": "user",
         "id": "730822a3-a39d-4313-aff9-f18324e745dd"
@@ -3869,13 +4190,14 @@
         "tags": [
           "行业概念",
           "文字",
-          "思考"
+          "思考",
+          "MySQL"
         ],
         "summary": "",
         "title": "Day77【概念解析】Gap Lock",
         "status": "Published",
         "urlname": "da23251d-5135-46d2-be88-ce55299e6d27",
-        "updated": "2023-12-07 12:40:00"
+        "updated": "2023-12-11 04:59:00"
       },
       "url": "https://www.notion.so/Day77-Gap-Lock-da23251d513546d2be88ce55299e6d27",
       "public_url": "https://eachenkuang.notion.site/Day77-Gap-Lock-da23251d513546d2be88ce55299e6d27"
@@ -5694,8 +6016,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/86f96968-f617-4740-a539-e383d7d7f980/jon-tyson-P2aOvMMUJnY-unsplash.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124156Z&X-Amz-Expires=3600&X-Amz-Signature=169aa0fa4e4e6e202389b6bff7f289b6f4adf5645444e5956b67ea3b28e8ba03&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:41:56.812Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/86f96968-f617-4740-a539-e383d7d7f980/jon-tyson-P2aOvMMUJnY-unsplash.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=7eb2688a719e8cf7b3c492971a9316579023d5ffebb084b7bf5f6c92de0d1cf1&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T06:06:14.011Z"
         }
       },
       "icon": {
@@ -6589,8 +6911,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/85f6c012-2895-49af-99a2-3e005710adbc/cover_%281%29.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124156Z&X-Amz-Expires=3600&X-Amz-Signature=ceb4ce7ab2cb37bd6e2a6dd63a9eeb98d9058d1ad3eb5b22a73006973729d46a&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:41:56.805Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/85f6c012-2895-49af-99a2-3e005710adbc/cover_%281%29.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=8a974a2857b51772601753334c51aa9b43df58cae982aba28a5c113ef5a1ed25&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T06:06:14.024Z"
         }
       },
       "icon": {
@@ -8408,8 +8730,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124156Z&X-Amz-Expires=3600&X-Amz-Signature=fc7db6eb420a0862bf4dbed2fbc6b846fe1611b99cbbc8ac48fca6774cff0314&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:41:56.810Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T06:06:14.021Z"
         }
       },
       "icon": {
@@ -8459,8 +8781,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124156Z&X-Amz-Expires=3600&X-Amz-Signature=fc7db6eb420a0862bf4dbed2fbc6b846fe1611b99cbbc8ac48fca6774cff0314&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:41:56.815Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T06:06:14.021Z"
         }
       },
       "icon": {
@@ -8509,8 +8831,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124156Z&X-Amz-Expires=3600&X-Amz-Signature=fc7db6eb420a0862bf4dbed2fbc6b846fe1611b99cbbc8ac48fca6774cff0314&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:41:56.810Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T06:06:14.026Z"
         }
       },
       "icon": {
@@ -8559,8 +8881,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124156Z&X-Amz-Expires=3600&X-Amz-Signature=fc7db6eb420a0862bf4dbed2fbc6b846fe1611b99cbbc8ac48fca6774cff0314&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:41:56.815Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T06:06:14.021Z"
         }
       },
       "icon": {
@@ -8609,8 +8931,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124156Z&X-Amz-Expires=3600&X-Amz-Signature=fc7db6eb420a0862bf4dbed2fbc6b846fe1611b99cbbc8ac48fca6774cff0314&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:41:56.810Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T06:06:14.337Z"
         }
       },
       "icon": {
@@ -8659,8 +8981,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124156Z&X-Amz-Expires=3600&X-Amz-Signature=fc7db6eb420a0862bf4dbed2fbc6b846fe1611b99cbbc8ac48fca6774cff0314&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:41:56.811Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T06:06:14.338Z"
         }
       },
       "icon": {
@@ -8709,8 +9031,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124156Z&X-Amz-Expires=3600&X-Amz-Signature=fc7db6eb420a0862bf4dbed2fbc6b846fe1611b99cbbc8ac48fca6774cff0314&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:41:56.811Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T06:06:14.342Z"
         }
       },
       "icon": {
@@ -8759,8 +9081,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124156Z&X-Amz-Expires=3600&X-Amz-Signature=fc7db6eb420a0862bf4dbed2fbc6b846fe1611b99cbbc8ac48fca6774cff0314&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:41:56.811Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T06:06:14.342Z"
         }
       },
       "icon": {
@@ -8809,8 +9131,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124157Z&X-Amz-Expires=3600&X-Amz-Signature=ccbc7714eb035b48d3fe6da0a08cd241ec3e8690b87cf451c5bec0cadac0181b&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:41:57.063Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T06:06:14.338Z"
         }
       },
       "icon": {
@@ -8859,8 +9181,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124157Z&X-Amz-Expires=3600&X-Amz-Signature=ccbc7714eb035b48d3fe6da0a08cd241ec3e8690b87cf451c5bec0cadac0181b&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:41:57.059Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T06:06:14.339Z"
         }
       },
       "icon": {
@@ -8909,8 +9231,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124157Z&X-Amz-Expires=3600&X-Amz-Signature=ccbc7714eb035b48d3fe6da0a08cd241ec3e8690b87cf451c5bec0cadac0181b&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:41:57.063Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T06:06:14.339Z"
         }
       },
       "icon": {
@@ -8959,8 +9281,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124157Z&X-Amz-Expires=3600&X-Amz-Signature=ccbc7714eb035b48d3fe6da0a08cd241ec3e8690b87cf451c5bec0cadac0181b&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:41:57.060Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T06:06:14.339Z"
         }
       },
       "icon": {
@@ -9058,8 +9380,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/bfb30b48-50c3-459a-9cb3-a4c5cfb36c1e/mysql-like.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124157Z&X-Amz-Expires=3600&X-Amz-Signature=405e8557f0d17dd8054a862c93cda277a53a88018c8f046799725e0f6a28e687&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:41:57.060Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/bfb30b48-50c3-459a-9cb3-a4c5cfb36c1e/mysql-like.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=a30227b19b8aa4ec93764524cfc62f862e901f7ef7fae9668c0f96cab3539c9f&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T06:06:14.340Z"
         }
       },
       "icon": {
@@ -9447,8 +9769,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/33d23e03-f43d-4c01-84ae-9b4733c2aad2/redis.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231207%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231207T124157Z&X-Amz-Expires=3600&X-Amz-Signature=b23fefe439dbe0ce45d53d94f9c96d38f2bbacdd767d92ba38f15a07cb335434&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-07T13:41:57.063Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/33d23e03-f43d-4c01-84ae-9b4733c2aad2/redis.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=fcdc35ca733ea3f4c0411e36886f24ef825aff40587c816c294b92d7e49b4f13&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T06:06:14.342Z"
         }
       },
       "icon": {

@@ -1,7 +1,7 @@
 ---
 password: ""
 icon: ""
-date: "2023-12-06 11:56:00"
+date: "2023-12-08 12:22:00"
 type: Post
 category: ""
 slug: ""
@@ -9,8 +9,8 @@ tags: []
 summary: ""
 title: Article Template
 status: Draft
-urlname: 0974b66c-20cc-4ef3-8069-a26dc4bc93b5
-updated: "2023-12-06 11:56:00"
+urlname: ef64726e-d448-4f5f-9b89-8e0bda9a6d93
+updated: "2023-12-08 12:22:00"
 ---
 
 > 😀 这里写文章的前言：  

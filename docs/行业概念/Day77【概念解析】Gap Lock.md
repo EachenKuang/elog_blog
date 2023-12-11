@@ -9,11 +9,12 @@ tags:
   - 行业概念
   - 文字
   - 思考
+  - MySQL
 summary: ""
 title: Day77【概念解析】Gap Lock
 status: Published
 urlname: da23251d-5135-46d2-be88-ce55299e6d27
-updated: "2023-12-07 12:40:00"
+updated: "2023-12-11 04:59:00"
 ---
 
 # 整理定义
