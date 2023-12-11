@@ -3867,7 +3867,7 @@
     {
       "id": "2a4573be-2451-438d-89b2-1b5b4906d687",
       "doc_id": "2a4573be-2451-438d-89b2-1b5b4906d687",
-      "updated": 1702270980000,
+      "updated": 1702296480000,
       "body_original": "\n# 整理定义\n\n\nSQL中的三种语言，DML，DDL，DCL。\n\n\n**DML**(Data manipulation language) 数据操作语言，包含 `INSERT` `UPDATE` `DELETE` `SELECT` 的SQL语句，统称为DML。\n\n\n**DDL**(Data definition language) 数据定义语言，包含 `CREATE` `ALTER` `DROP` `TRUNCATE` 的SQL语句，是用于管理数据库本身而不是单独的表行的SQL语句。\n\n\n**DCL**(Data control language) 数据控制语言，包含 `GRANT` 与 `REVOKE`，是管理权限的SQL语句\n\n\n> **DML(**Data manipulation language**)**\n\n\n\tData manipulation language, a set of _**SQL**_ statements for performing [`INSERT`](https://dev.mysql.com/doc/refman/8.0/en/insert.html), [`UPDATE`](https://dev.mysql.com/doc/refman/8.0/en/update.html), and [`DELETE`](https://dev.mysql.com/doc/refman/8.0/en/delete.html) operations. The [`SELECT`](https://dev.mysql.com/doc/refman/8.0/en/select.html) statement is sometimes considered as a DML statement, because the `SELECT ... FOR UPDATE` form is subject to the same considerations for _**locking**_ as [`INSERT`](https://dev.mysql.com/doc/refman/8.0/en/insert.html), [`UPDATE`](https://dev.mysql.com/doc/refman/8.0/en/update.html), and [`DELETE`](https://dev.mysql.com/doc/refman/8.0/en/delete.html).\n\n\n\tDML statements for an `InnoDB` table operate in the context of a _**transaction**_, so their effects can be _**committed**_ or _**rolled back**_ as a single unit.\n\n\n> **DDL(**Data definition language**)**\n\n\n\tData definition language, a set of _**SQL**_ statements for manipulating the database itself rather than individual table rows. Includes all forms of the `CREATE`, `ALTER`, and `DROP` statements. Also includes the `TRUNCATE` statement, because it works differently than a `DELETE FROM` _**`table_name`**_ statement, even though the ultimate effect is similar.\n\n\n\tDDL statements automatically _**commit**_ the current _**transaction**_; they cannot be _**rolled back**_.\n\n\n> **DCL(**Data control language**)**  \n> Data control language, a set of _**SQL**_ statements for managing privileges. In MySQL, consists of the [`GRANT`](https://dev.mysql.com/doc/refman/8.0/en/grant.html) and [`REVOKE`](https://dev.mysql.com/doc/refman/8.0/en/revoke.html) statements. Contrast with _**DDL**_ and _**DML**_.\n\n\n# 复述展开\n\n\n下面是一个简单的表格，概述了DML、DDL和DCL的定义、区别、使用方式以及示例：\n\n\n| 类别                               | 定义                     | 区别                   | 使用方式                          | 示例                                                                                                                                                                                           |\n| -------------------------------- | ---------------------- | -------------------- | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| DML (Data Manipulation Language) | 用于添加、删除、更新和查询数据库记录的语言。 | 直接与数据记录进行交互，不会改变表结构。 | 通常在常规数据库操作中使用，如插入、更新、删除和查询数据。 | INSERT INTO table_name (column1, column2) VALUES (value1, value2);\nUPDATE table_name SET column1 = value1 WHERE condition;\nDELETE FROM table_name WHERE condition;\nSELECT * FROM table_name; |\n| DDL (Data Definition Language)   | 用于定义和修改数据库结构的语言。       | 改变表结构，如创建或删除表和索引。    | 在数据库设计和建模阶段使用，或者在需要修改表结构时使用。  | CREATE TABLE table_name (column1 datatype, column2 datatype);\nALTER TABLE table_name ADD column_name datatype;\nDROP TABLE table_name;\nCREATE INDEX index_name ON table_name (column_name);   |\n| DCL (Data Control Language)      | 用于控制数据库中的数据访问权限的语言。    | 与数据的安全性、访问权限和控制相关。   | 在需要管理用户权限和控制对数据库对象访问时使用。      | GRANT SELECT ON database.table TO 'user'@'host';\nREVOKE SELECT ON database.table FROM 'user'@'host';                                                                                         |\n\n\n# 理解体会\n\n\n理解这三者的定义以及区别，能够更快地了解不同SQL语句的差异，方便后续对于SQL的操作。\n\n",
       "properties": {
         "password": "",
@@ -3886,7 +3886,7 @@
         "title": "Day80【概念解析】 DML，DDL，DCL",
         "status": "Published",
         "urlname": "2a4573be-2451-438d-89b2-1b5b4906d687",
-        "updated": "2023-12-11 05:03:00"
+        "updated": "2023-12-11 12:08:00"
       },
       "catalog": [
         {
@@ -3954,14 +3954,98 @@
       "body": "",
       "realName": "Article Template",
       "relativePath": "/Article Template.md"
+    },
+    {
+      "id": "02fb2da3-a36a-4f29-bb0e-02203e544821",
+      "doc_id": "02fb2da3-a36a-4f29-bb0e-02203e544821",
+      "updated": 1702296540000,
+      "body_original": "\n# 整理定义\n\n\n**autocommit（自动提交）**\n\n\n`autocommit`模式是数据库系统的一个设置，当这个设置被启用时，每个SQL语句都会被视为一个独立的事务，并且在执行后立即被提交。这意味着，如果你执行了一个`INSERT`、`UPDATE`或`DELETE`语句，该操作会立即生效，数据被永久写入数据库，无需显式调用`COMMIT`命令。\n\n\n在`autocommit`模式关闭的情况下，你需要显式地开始一个事务，并用`COMMIT`或`ROLLBACK`语句结束它。这允许你执行多个操作作为一个单一的事务单元，要么全部成功，要么在遇到错误时全部回滚。\n\n\n**Commit（提交）**\n\n\n`COMMIT`命令用于结束一个事务，并将自事务开始以来进行的所有修改永久保存到数据库中。当你执行`COMMIT`时，所有自上一个`COMMIT`或`ROLLBACK`以来的更改都会成为数据库的一部分。如果数据库系统崩溃或发生故障，已经提交的事务保证不会丢失，这是由数据库的持久性特性所保证的。\n\n\n**Rollback（回滚）**\n\n\n`ROLLBACK`命令与`COMMIT`相反，它用于撤销一个事务中的所有操作。如果在执行一系列操作时遇到错误，或者你决定出于某种原因不希望更改生效，可以使用`ROLLBACK`命令。执行`ROLLBACK`后，自上一个`COMMIT`或`ROLLBACK`以来的所有更改都将被撤销，数据库状态回到事务开始时的状态。\n\n\n# 复述展开\n\n1. **InnoDB事务模型**：在InnoDB存储引擎中，所有用户活动都是在事务中进行的。如果启用了`autocommit`模式，每个SQL语句都会自动成为一个**单独**的事务。\n2. **autocommit模式**：默认情况下，MySQL在每个新连接的会话中启用`autocommit`。这意味着，**如果SQL语句执行成功，MySQL会在每个语句之后自动进行提交（COMMIT）**。如果语句执行出错，是否提交或回滚取决于具体的错误类型。\n3. **显式事务**：即使在`autocommit`模式启用的情况下，也可以通过显式地使用`START TRANSACTION`或`BEGIN`开始一个事务，并使用`COMMIT`或`ROLLBACK`来结束它，从而执行多条语句的事务。\n4. **禁用autocommit模式**：在会话中通过`SET autocommit = 0`禁用`autocommit`模式后，该会话将始终保持一个开放的事务。使用`COMMIT`或`ROLLBACK`可以结束当前事务，并自动开始一个新的事务。\n5. **会话结束时的事务处理**：如果`autocommit`模式被禁用，并且会话在没有显式提交最后一个事务的情况下结束，MySQL将回滚该事务。\n6. **隐式提交**：某些语句执行时会隐式地结束当前事务，就好像在执行该语句之前进行了`COMMIT`一样。\n7. **COMMIT与ROLLBACK**：`COMMIT`操作会使当前事务中的所有更改变为永久性，并且这些更改对其他会话可见。而`ROLLBACK`操作则取消当前事务中的所有修改。无论是`COMMIT`还是`ROLLBACK`，都会释放当前事务中设置的所有InnoDB锁。\n\n## 语句模板\n\n\n```sql\nSTART TRANSACTION\n    [transaction_characteristic [, transaction_characteristic] ...]\n\ntransaction_characteristic: {\n    WITH CONSISTENT SNAPSHOT\n  | READ WRITE\n  | READ ONLY\n}\n\nBEGIN [WORK]\nCOMMIT [WORK] [AND [NO] CHAIN] [[NO] RELEASE]\nROLLBACK [WORK] [AND [NO] CHAIN] [[NO] RELEASE]\nSET autocommit = {0 | 1}\n```\n\n\n这些语句提供对事务使用的控制：\n\n- START TRANSACTION 或 BEGIN 启动新事务。\n- COMMIT 提交当前事务，使其更改永久化。\n- ROLLBACK 回滚当前事务，取消其更改。\n- SET autocommit 禁用或启用当前会话的默认自动提交模式。\n\n默认情况下，MySQL 运行时启用自动提交模式。 这意味着，当不在事务内部时，每个语句都是原子的，就好像它被 START TRANSACTION 和 COMMIT 包围一样。 您不能使用 ROLLBACK 来撤消效果； 但是，如果在语句执行期间发生错误，则该语句将回滚。\n\n\n# 理解体会\n\n\n通过对上述的学习，可以体会到了事务对于数据库操作的重要性，它们是保证数据完整性和一致性的关键。同时，了解`autocommit`模式的工作原理对于编写高效且安全的数据库交互代码至关重要。正确地管理事务可以避免数据丢失和脏读，也可以在出现错误时恢复到一致的状态。\n\n\n# 参考\n\n\n[MySQL :: MySQL 8.0 Reference Manual :: 15.7.2.2 autocommit, Commit, and Rollback](https://dev.mysql.com/doc/refman/8.0/en/innodb-autocommit-commit-rollback.html)\n\n\n[MySQL :: MySQL 8.0 Reference Manual :: 13.3.1 START TRANSACTION, COMMIT, and ROLLBACK Statements](https://dev.mysql.com/doc/refman/8.0/en/commit.html)\n\n",
+      "properties": {
+        "password": "",
+        "icon": "",
+        "date": "2023-12-11",
+        "type": "Post",
+        "category": "行业概念",
+        "slug": "industry-day81",
+        "tags": [
+          "行业概念",
+          "文字",
+          "思考",
+          "MySQL"
+        ],
+        "summary": "",
+        "title": "Day81【概念解析】Autocommit, Commit, and Rollback",
+        "status": "Published",
+        "urlname": "02fb2da3-a36a-4f29-bb0e-02203e544821",
+        "updated": "2023-12-11 12:09:00"
+      },
+      "catalog": [
+        {
+          "title": "行业概念",
+          "doc_id": "02fb2da3-a36a-4f29-bb0e-02203e544821"
+        }
+      ],
+      "body": "",
+      "realName": "Day81【概念解析】Autocommit, Commit, and Rollback",
+      "relativePath": "/行业概念/Day81【概念解析】Autocommit, Commit, and Rollback.md"
     }
   ],
   "catalog": [
     {
       "object": "page",
+      "id": "02fb2da3-a36a-4f29-bb0e-02203e544821",
+      "created_time": "2023-12-11T12:06:00.000Z",
+      "last_edited_time": "2023-12-11T12:09:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
+      },
+      "cover": {
+        "type": "external",
+        "external": {
+          "url": "https://image.kuangyichen.com/image/Autocommit%2C%20Commit%2C%20and%20Rollback.webp"
+        }
+      },
+      "icon": {
+        "type": "emoji",
+        "emoji": "🗒️"
+      },
+      "parent": {
+        "type": "database_id",
+        "database_id": "cd6c4967-e5fe-45d2-976d-5d46736ada90"
+      },
+      "archived": false,
+      "properties": {
+        "password": "",
+        "icon": "",
+        "date": "2023-12-11",
+        "type": "Post",
+        "category": "行业概念",
+        "slug": "industry-day81",
+        "tags": [
+          "行业概念",
+          "文字",
+          "思考",
+          "MySQL"
+        ],
+        "summary": "",
+        "title": "Day81【概念解析】Autocommit, Commit, and Rollback",
+        "status": "Published",
+        "urlname": "02fb2da3-a36a-4f29-bb0e-02203e544821",
+        "updated": "2023-12-11 12:09:00"
+      },
+      "url": "https://www.notion.so/Day81-Autocommit-Commit-and-Rollback-02fb2da3a36a4f29bb0e02203e544821",
+      "public_url": "https://eachenkuang.notion.site/Day81-Autocommit-Commit-and-Rollback-02fb2da3a36a4f29bb0e02203e544821"
+    },
+    {
+      "object": "page",
       "id": "2a4573be-2451-438d-89b2-1b5b4906d687",
       "created_time": "2023-12-11T04:58:00.000Z",
-      "last_edited_time": "2023-12-11T05:03:00.000Z",
+      "last_edited_time": "2023-12-11T12:08:00.000Z",
       "created_by": {
         "object": "user",
         "id": "730822a3-a39d-4313-aff9-f18324e745dd"
@@ -4002,7 +4086,7 @@
         "title": "Day80【概念解析】 DML，DDL，DCL",
         "status": "Published",
         "urlname": "2a4573be-2451-438d-89b2-1b5b4906d687",
-        "updated": "2023-12-11 05:03:00"
+        "updated": "2023-12-11 12:08:00"
       },
       "url": "https://www.notion.so/Day80-DML-DDL-DCL-2a4573be2451438d89b21b5b4906d687",
       "public_url": "https://eachenkuang.notion.site/Day80-DML-DDL-DCL-2a4573be2451438d89b21b5b4906d687"
@@ -6016,8 +6100,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/86f96968-f617-4740-a539-e383d7d7f980/jon-tyson-P2aOvMMUJnY-unsplash.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=7eb2688a719e8cf7b3c492971a9316579023d5ffebb084b7bf5f6c92de0d1cf1&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-11T06:06:14.011Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/86f96968-f617-4740-a539-e383d7d7f980/jon-tyson-P2aOvMMUJnY-unsplash.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T121146Z&X-Amz-Expires=3600&X-Amz-Signature=328a1325dad28b75393be193631b2448f5afeb20564b258503cb5a194dc664ca&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T13:11:46.467Z"
         }
       },
       "icon": {
@@ -6911,8 +6995,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/85f6c012-2895-49af-99a2-3e005710adbc/cover_%281%29.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=8a974a2857b51772601753334c51aa9b43df58cae982aba28a5c113ef5a1ed25&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-11T06:06:14.024Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/85f6c012-2895-49af-99a2-3e005710adbc/cover_%281%29.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T121146Z&X-Amz-Expires=3600&X-Amz-Signature=8c6c1e67174b845c3e28b444d0a098fa7d5fc5679c6ea45c068e1e96ad572e3a&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T13:11:46.459Z"
         }
       },
       "icon": {
@@ -8730,8 +8814,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-11T06:06:14.021Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T121146Z&X-Amz-Expires=3600&X-Amz-Signature=d4df5413e8c1eec8c4e4fbe4ed4b0249d0a288b8604c7370429b232863bc09b9&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T13:11:46.465Z"
         }
       },
       "icon": {
@@ -8781,8 +8865,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-11T06:06:14.021Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T121146Z&X-Amz-Expires=3600&X-Amz-Signature=d4df5413e8c1eec8c4e4fbe4ed4b0249d0a288b8604c7370429b232863bc09b9&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T13:11:46.466Z"
         }
       },
       "icon": {
@@ -8831,8 +8915,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-11T06:06:14.026Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T121146Z&X-Amz-Expires=3600&X-Amz-Signature=d4df5413e8c1eec8c4e4fbe4ed4b0249d0a288b8604c7370429b232863bc09b9&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T13:11:46.469Z"
         }
       },
       "icon": {
@@ -8881,8 +8965,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-11T06:06:14.021Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T121146Z&X-Amz-Expires=3600&X-Amz-Signature=d4df5413e8c1eec8c4e4fbe4ed4b0249d0a288b8604c7370429b232863bc09b9&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T13:11:46.771Z"
         }
       },
       "icon": {
@@ -8931,8 +9015,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-11T06:06:14.337Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T121146Z&X-Amz-Expires=3600&X-Amz-Signature=d4df5413e8c1eec8c4e4fbe4ed4b0249d0a288b8604c7370429b232863bc09b9&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T13:11:46.777Z"
         }
       },
       "icon": {
@@ -8981,8 +9065,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-11T06:06:14.338Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T121146Z&X-Amz-Expires=3600&X-Amz-Signature=d4df5413e8c1eec8c4e4fbe4ed4b0249d0a288b8604c7370429b232863bc09b9&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T13:11:46.772Z"
         }
       },
       "icon": {
@@ -9031,8 +9115,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-11T06:06:14.342Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T121146Z&X-Amz-Expires=3600&X-Amz-Signature=d4df5413e8c1eec8c4e4fbe4ed4b0249d0a288b8604c7370429b232863bc09b9&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T13:11:46.772Z"
         }
       },
       "icon": {
@@ -9081,8 +9165,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-11T06:06:14.342Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T121146Z&X-Amz-Expires=3600&X-Amz-Signature=d4df5413e8c1eec8c4e4fbe4ed4b0249d0a288b8604c7370429b232863bc09b9&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T13:11:46.773Z"
         }
       },
       "icon": {
@@ -9131,8 +9215,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-11T06:06:14.338Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T121146Z&X-Amz-Expires=3600&X-Amz-Signature=d4df5413e8c1eec8c4e4fbe4ed4b0249d0a288b8604c7370429b232863bc09b9&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T13:11:46.773Z"
         }
       },
       "icon": {
@@ -9181,8 +9265,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-11T06:06:14.339Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T121146Z&X-Amz-Expires=3600&X-Amz-Signature=d4df5413e8c1eec8c4e4fbe4ed4b0249d0a288b8604c7370429b232863bc09b9&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T13:11:46.773Z"
         }
       },
       "icon": {
@@ -9231,8 +9315,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-11T06:06:14.339Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T121146Z&X-Amz-Expires=3600&X-Amz-Signature=d4df5413e8c1eec8c4e4fbe4ed4b0249d0a288b8604c7370429b232863bc09b9&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T13:11:46.774Z"
         }
       },
       "icon": {
@@ -9281,8 +9365,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=174146b51591eac91db6f293acb4dd3c2df63b6df71168f5c3052ca77c5d493c&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-11T06:06:14.339Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T121146Z&X-Amz-Expires=3600&X-Amz-Signature=d4df5413e8c1eec8c4e4fbe4ed4b0249d0a288b8604c7370429b232863bc09b9&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T13:11:46.774Z"
         }
       },
       "icon": {
@@ -9380,8 +9464,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/bfb30b48-50c3-459a-9cb3-a4c5cfb36c1e/mysql-like.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=a30227b19b8aa4ec93764524cfc62f862e901f7ef7fae9668c0f96cab3539c9f&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-11T06:06:14.340Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/bfb30b48-50c3-459a-9cb3-a4c5cfb36c1e/mysql-like.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T121146Z&X-Amz-Expires=3600&X-Amz-Signature=f34c90763c3848ae8781acaf52d4698dbff0a73effff61439416d9bdd4ab572a&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T13:11:46.774Z"
         }
       },
       "icon": {
@@ -9769,8 +9853,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/33d23e03-f43d-4c01-84ae-9b4733c2aad2/redis.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T050614Z&X-Amz-Expires=3600&X-Amz-Signature=fcdc35ca733ea3f4c0411e36886f24ef825aff40587c816c294b92d7e49b4f13&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-11T06:06:14.342Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/33d23e03-f43d-4c01-84ae-9b4733c2aad2/redis.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231211%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231211T121146Z&X-Amz-Expires=3600&X-Amz-Signature=fa51ca41eb0a24c63ee54f26077486ae1e62d87860de70f8e256335e7a2b1a02&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-11T13:11:46.776Z"
         }
       },
       "icon": {

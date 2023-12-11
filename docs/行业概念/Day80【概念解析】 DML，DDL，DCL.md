@@ -14,7 +14,7 @@ summary: ""
 title: Day80【概念解析】 DML，DDL，DCL
 status: Published
 urlname: 2a4573be-2451-438d-89b2-1b5b4906d687
-updated: "2023-12-11 05:03:00"
+updated: "2023-12-11 12:08:00"
 ---
 
 # 整理定义
