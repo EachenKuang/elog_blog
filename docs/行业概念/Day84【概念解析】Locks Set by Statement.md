@@ -9,11 +9,12 @@ tags:
   - 行业概念
   - 文字
   - 思考
+  - MySQL
 summary: ""
 title: Day84【概念解析】Locks Set by Statement
 status: Published
 urlname: facd9060-c655-4456-a316-b930174e50db
-updated: "2023-12-14 06:15:00"
+updated: "2023-12-15 01:30:00"
 ---
 
 # 整理定义
