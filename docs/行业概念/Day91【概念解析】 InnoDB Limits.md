@@ -9,11 +9,12 @@ tags:
   - 行业概念
   - 文字
   - 思考
+  - MySQL
 summary: ""
 title: Day91【概念解析】 InnoDB Limits
 status: Published
 urlname: a379bc15-440b-42a6-9d06-369c4cdc17c6
-updated: "2023-12-22 11:36:00"
+updated: "2023-12-22 12:05:00"
 ---
 
 > 😄 本文主要介绍下 InnoDB 引擎中的一些最值。其中包含 InnoDB 表、索引、表空间和其他方面的最值限制。
