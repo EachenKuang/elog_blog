@@ -12,7 +12,7 @@ summary: "最近发现一个不错的网站封面制作的网站——《https:/
 title: "[分享]unsplash免费图片接口使用与实战"
 status: Published
 urlname: e49a71ec-c929-47bf-8116-aab954b01885
-updated: "2023-12-22 03:27:00"
+updated: "2023-12-22 08:33:00"
 ---
 
 > 😀 最近发现一个不错的网站封面制作的网站——《[https://coverview.vercel.app/](https://coverview.vercel.app/)》，通过使用它，我生成了非常多的自定义的图片封面。一次偶然间，发现里面的图片都是 unsplash 提供的。为何我不试试看自己实现一个获取 unsplash 免费图片的接口呢？于是就有了这篇文章。
@@ -72,6 +72,8 @@ Unsplash 是一个致力于专有图库摄影的网站。 自 2021 年起，它�
 
 [bookmark](https://unsplash.com/documentation)
 
+## 如何快速实现获取免费图片接口
+
 > 💡 **步骤说明**：
 >
 > 1. 创建一个 **Unsplash 账户**
@@ -85,14 +87,44 @@ Unsplash 是一个致力于专有图库摄影的网站。 自 2021 年起，它�
 >    Search Photo: [Unsplash API Documentation | Free HD Photo API | Unsplash](https://unsplash.com/documentation#search-photos)  
 >    Get Random Photo: [Unsplash API Documentation | Free HD Photo API | Unsplash](https://unsplash.com/documentation#get-a-random-photo)
 
+## 图片使用
+
+图片的使用方式，可以在附录中看到示例，一般从 urls 字段中获取，可以按需使用，可供选择的有：
+
+    1. raw (原图)返回一个基本图像 URL，其中仅包含照片路径和 API 应用程序的“ixid”参数。 使用它可以轻松添加其他图像参数来构建您自己的图像 URL。
+    2. full （全幅，没有裁剪）返回 jpg 格式的照片及其最大尺寸。 出于性能目的，我们不建议使用此选项，因为用户的照片加载速度会很慢。
+    3. regular（宽度为 `1080 pixels` 的图）
+    4. small（宽度为 `400 pixels` 的图）
+    5. thumb （宽度为 `200 pixels` 长度的图）
+
+> 【[Unsplash API Documentation | Free HD Photo API | Unsplash](https://unsplash.com/documentation#example-image-use)】
+
+    - `full` returns the photo in jpg format with its maximum dimensions. For performance purposes, we don’t recommend using this as the photos will load slowly for your users.
+    - `regular` returns the photo in jpg format with a width of 1080 pixels.
+    - `small` returns the photo in jpg format with a width of 400 pixels.
+    - `thumb` returns the photo in jpg format with a width of 200 pixels.
+    - `raw` returns a base image URL with just the photo path and the `ixid` parameter for your API application. Use this to easily add additional image parameters to construct your own image URL.
+
+**示例说明：**
+
+如果您的应用程序需要宽度为 1500px、DPR 为 2 的图像，请获取原始 URL 并添加 w=1500 和 dpr=2 参数来创建新图像：
+
+```json
+photo.urls.raw + "&w=1500&dpr=2";
+// => [https://images.unsplash.com/photo-1461988320302-91bde64fc8e4?ixid=2yJhcHBfaWQiOjEyMDd9&w=1500&dpr=2](https://images.unsplash.com/photo-1461988320302-91bde64fc8e4?ixid=2yJhcHBfaWQiOjEyMDd9&w=1500&dpr=2)
+```
+
+如果应用程序的另一部分需要相同的图像，但宽度为一半，您可以轻松构建另一个 URL，而无需再次访问 API：
+
+```json
+photo.urls.raw + "&w=750&dpr=2";
+// => [https://images.unsplash.com/photo-1461988320302-91bde64fc8e4?ixid=2yJhcHBfaWQiOjEyMDd9&w=750&dpr=2](https://images.unsplash.com/photo-1461988320302-91bde64fc8e4?ixid=2yJhcHBfaWQiOjEyMDd9&w=750&dpr=2)
+```
+
 > 🚫 **注意事项**
 >
 > 1. 在创建 Unsplash 账户时，可能会出现【**reCaptcha 人机验证无法显示**】，这个问题一度困扰我很久。  
 >    参考这篇文章《[reCaptcha 人机验证无法显示和 CSP 问题解决方案 – Azure Zeng Blog](https://blog.azurezeng.com/recaptcha-use-in-china/comment-page-10/)》基本可以解决
->
-> 2. 返回格式示例见附录：
->
-> 3. 图片的使用方式，可以在附录中看到示例，一般从 urls 字段中获取，可以按需使用，可供选择的有：
 
 # 总结
 
