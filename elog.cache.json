@@ -4495,9 +4495,93 @@
       "body": "",
       "realName": "Day94【概念解析】InnoDB Checkpoints",
       "relativePath": "/行业概念/Day94【概念解析】InnoDB Checkpoints.md"
+    },
+    {
+      "id": "cc986261-bc28-4f37-8493-883dd3bcf140",
+      "doc_id": "cc986261-bc28-4f37-8493-883dd3bcf140",
+      "updated": 1703507100000,
+      "body_original": "\n# 整理定义\n\n\n**InnoDB Monitors（InnoDB 监视器）**\n\n\n`InnoDB` monitors provide information about the `InnoDB` internal state. This information is useful for performance tuning.\n\n\nInnoDB Monitors 是 MySQL 中的一组特殊工具，用于监控 InnoDB 存储引擎的内部工作状态。这些监控工具可以提供关于 InnoDB 性能和操作的详细信息，帮助数据库管理员诊断问题、优化性能以及更好地理解 InnoDB 的行为。\n\n\n# 复述展开\n\n\n## 分类\n\n\n有两种类型的“InnoDB”监视器：\n\n- The standard `InnoDB` Monitor （标准监视器）\n- The `InnoDB` Lock Monitor（锁监视器）\n\n其中\n\n\n标准监视器显示以下类型的信息：\n\n\t- 主后台线程完成的工作\n\t- 信号量等待\n\t- 有关最新外键和死锁错误的数据\n\t- 锁定等待交易\n\t- 活动事务持有的表和记录锁\n\t- 待处理的 I/O 操作和相关统计数据\n\t- 插入缓冲区和自适应哈希索引统计\n\t- 重做日志数据\n\t- 缓冲池统计\n\t- 行操作数据\n\n锁定监视器打印附加锁定信息作为标准“InnoDB”监视器输出的一部分。\n\n\n> [MySQL :: MySQL 8.0 Reference Manual :: 15.17.1 InnoDB Monitor Types](https://dev.mysql.com/doc/refman/8.0/en/innodb-monitor-types.html)\n\n\n\tThere are two types of `InnoDB` monitor:\n\n\t- The standard `InnoDB` Monitor displays the following types of information:\n\t\t- Work done by the main background thread\n\t\t- Semaphore waits\n\t\t- Data about the most recent foreign key and deadlock errors\n\t\t- Lock waits for transactions\n\t\t- Table and record locks held by active transactions\n\t\t- Pending I/O operations and related statistics\n\t\t- Insert buffer and adaptive hash index statistics\n\t\t- Redo log data\n\t\t- Buffer pool statistics\n\t\t- Row operation data\n\t- The `InnoDB` Lock Monitor prints additional lock information as part of the standard `InnoDB` Monitor output.\n\n# 理解体会\n\n\n启用这些监控器通常涉及到在 MySQL 服务器上执行特定的 SQL 命令或设置系统变量。一些监控器，如标准监控器，可以临时启用以获取即时的状态报告；而其他监控器可能需要将输出重定向到一个文件中，以便进行持续监控和后续分析。\n\n\n需要注意的是，虽然 InnoDB 监控器是强大的诊断工具，但它们也可能对系统性能产生影响，特别是在高负载的生产环境中。因此，建议仅在需要时启用它们，并在分析完毕后关闭。此外，监控器输出的信息可能非常庞大和复杂，需要一定的专业知识来正确解读和利用这些数据。\n\n\n总的来说，InnoDB 监控器是数据库管理员和开发人员的宝贵资源，可以帮助他们深入了解数据库的内部运作，并在必要时进行优化和故障排除。\n\n",
+      "properties": {
+        "password": "",
+        "icon": "",
+        "date": "2023-12-25",
+        "type": "Post",
+        "category": "行业概念",
+        "slug": "industry-day95",
+        "tags": [
+          "行业概念",
+          "文字",
+          "思考",
+          "MySQL"
+        ],
+        "summary": "",
+        "title": "Day95【概念解析】InnoDB Monitors",
+        "status": "Published",
+        "urlname": "cc986261-bc28-4f37-8493-883dd3bcf140",
+        "updated": "2023-12-25 12:25:00"
+      },
+      "catalog": [
+        {
+          "title": "行业概念",
+          "doc_id": "cc986261-bc28-4f37-8493-883dd3bcf140"
+        }
+      ],
+      "body": "",
+      "realName": "Day95【概念解析】InnoDB Monitors",
+      "relativePath": "/行业概念/Day95【概念解析】InnoDB Monitors.md"
     }
   ],
   "catalog": [
+    {
+      "object": "page",
+      "id": "cc986261-bc28-4f37-8493-883dd3bcf140",
+      "created_time": "2023-12-25T12:23:00.000Z",
+      "last_edited_time": "2023-12-25T12:25:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
+      },
+      "cover": {
+        "type": "external",
+        "external": {
+          "url": "https://image.kuangyichen.com/image/InnoDB%20Monitors.webp"
+        }
+      },
+      "icon": {
+        "type": "emoji",
+        "emoji": "🗒️"
+      },
+      "parent": {
+        "type": "database_id",
+        "database_id": "cd6c4967-e5fe-45d2-976d-5d46736ada90"
+      },
+      "archived": false,
+      "properties": {
+        "password": "",
+        "icon": "",
+        "date": "2023-12-25",
+        "type": "Post",
+        "category": "行业概念",
+        "slug": "industry-day95",
+        "tags": [
+          "行业概念",
+          "文字",
+          "思考",
+          "MySQL"
+        ],
+        "summary": "",
+        "title": "Day95【概念解析】InnoDB Monitors",
+        "status": "Published",
+        "urlname": "cc986261-bc28-4f37-8493-883dd3bcf140",
+        "updated": "2023-12-25 12:25:00"
+      },
+      "url": "https://www.notion.so/Day95-InnoDB-Monitors-cc986261bc284f378493883dd3bcf140",
+      "public_url": "https://eachenkuang.notion.site/Day95-InnoDB-Monitors-cc986261bc284f378493883dd3bcf140"
+    },
     {
       "object": "page",
       "id": "2729d946-80f9-4140-8e72-966a2b1e8283",
@@ -7354,8 +7438,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/86f96968-f617-4740-a539-e383d7d7f980/jon-tyson-P2aOvMMUJnY-unsplash.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T120348Z&X-Amz-Expires=3600&X-Amz-Signature=39342497138637fec32f4c378c6b19de78a411b3ad68a5344347fec89fe5819f&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-25T13:03:48.732Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/86f96968-f617-4740-a539-e383d7d7f980/jon-tyson-P2aOvMMUJnY-unsplash.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T122627Z&X-Amz-Expires=3600&X-Amz-Signature=1c560524251ee49951a9be59760e14225c36ca359716fd3fe7c0d61c01511662&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-25T13:26:27.586Z"
         }
       },
       "icon": {
@@ -8249,8 +8333,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/85f6c012-2895-49af-99a2-3e005710adbc/cover_%281%29.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T120348Z&X-Amz-Expires=3600&X-Amz-Signature=0c50127bb426cb1d1ed64a12507871ba4db4a1afca57dfe4687087b28ec1ec91&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-25T13:03:48.735Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/85f6c012-2895-49af-99a2-3e005710adbc/cover_%281%29.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T122627Z&X-Amz-Expires=3600&X-Amz-Signature=2be395b3a00579d7d144e0f3440162eeeda588b130695b26a259e829876bf33a&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-25T13:26:27.499Z"
         }
       },
       "icon": {
@@ -10068,8 +10152,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T120349Z&X-Amz-Expires=3600&X-Amz-Signature=c8381430c0a26271c4f291fe9d5965fbcdaba679c2f5e93021b971b0c4f4a127&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-25T13:03:49.014Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T122721Z&X-Amz-Expires=3600&X-Amz-Signature=2c3a15c9dc2b6bd4fc2fcce5bfc4000ebc9b977b70bc724e44892264c8ac804d&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-25T13:27:21.471Z"
         }
       },
       "icon": {
@@ -10119,8 +10203,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T120349Z&X-Amz-Expires=3600&X-Amz-Signature=c8381430c0a26271c4f291fe9d5965fbcdaba679c2f5e93021b971b0c4f4a127&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-25T13:03:49.014Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T122721Z&X-Amz-Expires=3600&X-Amz-Signature=2c3a15c9dc2b6bd4fc2fcce5bfc4000ebc9b977b70bc724e44892264c8ac804d&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-25T13:27:21.471Z"
         }
       },
       "icon": {
@@ -10169,8 +10253,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T120349Z&X-Amz-Expires=3600&X-Amz-Signature=c8381430c0a26271c4f291fe9d5965fbcdaba679c2f5e93021b971b0c4f4a127&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-25T13:03:49.014Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T122721Z&X-Amz-Expires=3600&X-Amz-Signature=2c3a15c9dc2b6bd4fc2fcce5bfc4000ebc9b977b70bc724e44892264c8ac804d&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-25T13:27:21.471Z"
         }
       },
       "icon": {
@@ -10219,8 +10303,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T120349Z&X-Amz-Expires=3600&X-Amz-Signature=c8381430c0a26271c4f291fe9d5965fbcdaba679c2f5e93021b971b0c4f4a127&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-25T13:03:49.015Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T122721Z&X-Amz-Expires=3600&X-Amz-Signature=2c3a15c9dc2b6bd4fc2fcce5bfc4000ebc9b977b70bc724e44892264c8ac804d&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-25T13:27:21.476Z"
         }
       },
       "icon": {
@@ -10269,8 +10353,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T120349Z&X-Amz-Expires=3600&X-Amz-Signature=c8381430c0a26271c4f291fe9d5965fbcdaba679c2f5e93021b971b0c4f4a127&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-25T13:03:49.015Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T122721Z&X-Amz-Expires=3600&X-Amz-Signature=2c3a15c9dc2b6bd4fc2fcce5bfc4000ebc9b977b70bc724e44892264c8ac804d&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-25T13:27:21.472Z"
         }
       },
       "icon": {
@@ -10319,8 +10403,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T120349Z&X-Amz-Expires=3600&X-Amz-Signature=c8381430c0a26271c4f291fe9d5965fbcdaba679c2f5e93021b971b0c4f4a127&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-25T13:03:49.019Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T122721Z&X-Amz-Expires=3600&X-Amz-Signature=2c3a15c9dc2b6bd4fc2fcce5bfc4000ebc9b977b70bc724e44892264c8ac804d&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-25T13:27:21.472Z"
         }
       },
       "icon": {
@@ -10369,8 +10453,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T120349Z&X-Amz-Expires=3600&X-Amz-Signature=c8381430c0a26271c4f291fe9d5965fbcdaba679c2f5e93021b971b0c4f4a127&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-25T13:03:49.015Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T122721Z&X-Amz-Expires=3600&X-Amz-Signature=2c3a15c9dc2b6bd4fc2fcce5bfc4000ebc9b977b70bc724e44892264c8ac804d&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-25T13:27:21.472Z"
         }
       },
       "icon": {
@@ -10419,8 +10503,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T120349Z&X-Amz-Expires=3600&X-Amz-Signature=c8381430c0a26271c4f291fe9d5965fbcdaba679c2f5e93021b971b0c4f4a127&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-25T13:03:49.015Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T122721Z&X-Amz-Expires=3600&X-Amz-Signature=2c3a15c9dc2b6bd4fc2fcce5bfc4000ebc9b977b70bc724e44892264c8ac804d&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-25T13:27:21.477Z"
         }
       },
       "icon": {
@@ -10469,8 +10553,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T120349Z&X-Amz-Expires=3600&X-Amz-Signature=c8381430c0a26271c4f291fe9d5965fbcdaba679c2f5e93021b971b0c4f4a127&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-25T13:03:49.016Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T122721Z&X-Amz-Expires=3600&X-Amz-Signature=2c3a15c9dc2b6bd4fc2fcce5bfc4000ebc9b977b70bc724e44892264c8ac804d&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-25T13:27:21.477Z"
         }
       },
       "icon": {
@@ -10519,8 +10603,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T120349Z&X-Amz-Expires=3600&X-Amz-Signature=c8381430c0a26271c4f291fe9d5965fbcdaba679c2f5e93021b971b0c4f4a127&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-25T13:03:49.016Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T122721Z&X-Amz-Expires=3600&X-Amz-Signature=2c3a15c9dc2b6bd4fc2fcce5bfc4000ebc9b977b70bc724e44892264c8ac804d&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-25T13:27:21.472Z"
         }
       },
       "icon": {
@@ -10569,8 +10653,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T120349Z&X-Amz-Expires=3600&X-Amz-Signature=c8381430c0a26271c4f291fe9d5965fbcdaba679c2f5e93021b971b0c4f4a127&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-25T13:03:49.016Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T122721Z&X-Amz-Expires=3600&X-Amz-Signature=2c3a15c9dc2b6bd4fc2fcce5bfc4000ebc9b977b70bc724e44892264c8ac804d&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-25T13:27:21.473Z"
         }
       },
       "icon": {
@@ -10619,8 +10703,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T120349Z&X-Amz-Expires=3600&X-Amz-Signature=c8381430c0a26271c4f291fe9d5965fbcdaba679c2f5e93021b971b0c4f4a127&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-25T13:03:49.016Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T122721Z&X-Amz-Expires=3600&X-Amz-Signature=2c3a15c9dc2b6bd4fc2fcce5bfc4000ebc9b977b70bc724e44892264c8ac804d&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-25T13:27:21.473Z"
         }
       },
       "icon": {
@@ -10718,8 +10802,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/bfb30b48-50c3-459a-9cb3-a4c5cfb36c1e/mysql-like.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T120349Z&X-Amz-Expires=3600&X-Amz-Signature=f9dc10c9bdb66cce119f0a614aa7ce38c26939b49b681d0753cef787cbf856ee&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-25T13:03:49.017Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/bfb30b48-50c3-459a-9cb3-a4c5cfb36c1e/mysql-like.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T122721Z&X-Amz-Expires=3600&X-Amz-Signature=002391f0893bcc1df38485a95bce1c2e1691ccd0931d50ec66865289592167c9&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-25T13:27:21.473Z"
         }
       },
       "icon": {
@@ -11107,8 +11191,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/33d23e03-f43d-4c01-84ae-9b4733c2aad2/redis.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T120349Z&X-Amz-Expires=3600&X-Amz-Signature=50e1f8aafcb31060420679aebea6fd3b83769ce9cd2bdeab49ce7d17ab7ec62b&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-25T13:03:49.018Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/33d23e03-f43d-4c01-84ae-9b4733c2aad2/redis.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231225%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231225T122721Z&X-Amz-Expires=3600&X-Amz-Signature=51eeb6ceaf6c5fd93dc6ec697bfb9c74c141869624d1ba2f868926e65c3a1676&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-25T13:27:21.475Z"
         }
       },
       "icon": {
