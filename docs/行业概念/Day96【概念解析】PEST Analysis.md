@@ -7,11 +7,12 @@ category: 行业概念
 slug: industry-day96
 tags:
   - 行业概念
+  - 分析
 summary: ""
 title: Day96【概念解析】PEST Analysis
 status: Published
 urlname: 9b2cbca7-67d1-4084-8439-fa2631cb762e
-updated: "2023-12-26 01:42:00"
+updated: "2023-12-27 10:26:00"
 ---
 
 # 整理定义
