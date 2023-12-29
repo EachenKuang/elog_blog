@@ -12,7 +12,7 @@ summary: ""
 title: "[实践]一道SQL题引发的思考"
 status: Published
 urlname: dfa743c9-c01d-435a-9339-c29995b7ca57
-updated: "2023-12-29 11:55:00"
+updated: "2023-12-29 11:56:00"
 ---
 
 # 题目
@@ -111,7 +111,9 @@ mysql> SELECT BIT_COUNT("64");
 
 综上所述，这个查询对于每个月份，计算了`t1`表中有记录的不同天数。这种方法特别适用于处理稀疏数据，即不是每一天都有记录的情况。通过位运算，它能高效地对存在记录的天数进行计数，而不需要存储一个完整的日期列表。
 
-wei
+# 总结
+
+位运算的函数还是挺有效的，学习了。
 
 [MySQL :: MySQL 8.0 Reference Manual :: 3.6.8 Calculating Visits Per Day](https://dev.mysql.com/doc/refman/8.0/en/calculating-days.html)
 

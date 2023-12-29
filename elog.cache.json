@@ -4595,8 +4595,8 @@
     {
       "id": "dfa743c9-c01d-435a-9339-c29995b7ca57",
       "doc_id": "dfa743c9-c01d-435a-9339-c29995b7ca57",
-      "updated": 1703850900000,
-      "body_original": "\n# 题目\n\n\n> **下面的t1表中的数据为用户A的访问记录，请计算每个月的访问的天数。返回 year,month,days 格式。**\n\n\n```sql\nCREATE TABLE t1 (year YEAR, month INT UNSIGNED,\n             day INT UNSIGNED);\nINSERT INTO t1 VALUES(2000,1,1),(2000,1,20),(2000,1,30),(2000,2,2),\n            (2000,2,23),(2000,2,23);\n```\n\n\n正确结果返回应该为：\n\n\n```sql\n+------+-------+------+\n| year | month | days |\n+------+-------+------+\n| 2000 |     1 |    3 |\n| 2000 |     2 |    2 |\n+------+-------+------+\n```\n\n\n## 答案一\n\n\n```sql\nSELECT year,month,BIT_COUNT(BIT_OR(1<<day)) AS days FROM t1 GROUP BY year,month;\n```\n\n\n## 答案二\n\n\n```sql\nSELECT year, month, COUNT(day) AS days FROM (SELECT DISTINCT year,month,day FROM t1) as t2 GROUP BY year, month;\n```\n\n\n# 分析\n\n\n## 我的答案\n\n\n一开始，我想着，先对年月日进行一次去重，因为只需要计算一个月的天数，所以重复的数据是没有用的。\n\n\n```sql\nSELECT DISTINCT year,month,day FROM t1;\n```\n\n\n然后，在上面的结果的基础上，根据年月进行分组计算日的数量。\n\n\n```sql\nSELECT year, month, COUNT(day) AS days FROM (SELECT DISTINCT year,month,day FROM t1) as t2 GROUP BY year, month;\n```\n\n\n## 标准答案\n\n\n```sql\nSELECT year, month, COUNT(day) AS days FROM (SELECT DISTINCT year,month,day FROM t1) as t2 GROUP BY year, month;\n```\n\n\n然而，看了一眼标准答案，惊为天人，用了两个位运算的函数 `BIT_COUNT` 与 `BIT_OR` ，还有左移符号 `<<` 。\n\n\n看第一眼，没看懂了，看第二眼，还是没有看懂。\n\n- `BIT_COUNT` 计算对应的数的二进制中的1的数量，例如\n\n```sql\nmysql> SELECT BIT_COUNT(4); \n+--------------+\n| BIT_COUNT(4) |\n+--------------+\n|            1 |\n+--------------+\n1 row in set (0.00 sec)\n\nmysql> SELECT BIT_COUNT(\"64\");\n+-----------------+\n| BIT_COUNT(\"64\") |\n+-----------------+\n|               1 |\n+-----------------+\n1 row in set (0.00 sec)\n```\n\n- `BIT_OR` 可以理解为按位或，就是对 select出来的字段的值的列表，进行所有按位或操作。\n\n```sql\n可以这样理解，BIT_OR(column) # column 包含 1,3,4,5\n那么最终结果为 1|3|4|5 = 7\n```\n\n\n**继续分析：**\n\n1. `1<<day`：这是一个位左移操作。它将数字1向左移动`day`位。在这里，`day`很可能是一个代表月份中某一天的字段。例如，如果`day`是2，那么`1<<day`的结果是4（二进制中的`100`），这相当于2的`day`次方。\n2. `BIT_OR(1<<day)`：`BIT_OR`是一个聚合函数，它对组内所有行执行位或（bitwise OR）操作。在这个查询中，它将同一个`year`和`month`组内的所有`1<<day`的结果进行位或操作。这样，每个不同的`day`都会在结果中设置一个位。因为每个月的天数是唯一的，所以这个操作最终会产生一个整数，其二进制表示中的位数表示该月中出现的不同天数。【不超过32天，位数不会超过31，可以使用`BIT_OR`】\n3. `BIT_COUNT(BIT_OR(1<<day))`：`BIT_COUNT`函数计算一个数字的二进制表示中1的数量。在这个查询中，它计算上一步`BIT_OR`操作结果中的位数，这个位数就是该月中有记录的不同天数。\n4. `GROUP BY year,month`：这个语句指示MySQL按照年和月来分组记录。对于每个组，上述的位运算将单独执行。\n\n综上所述，这个查询对于每个月份，计算了`t1`表中有记录的不同天数。这种方法特别适用于处理稀疏数据，即不是每一天都有记录的情况。通过位运算，它能高效地对存在记录的天数进行计数，而不需要存储一个完整的日期列表。\n\n\nwei\n\n\n[MySQL :: MySQL 8.0 Reference Manual :: 3.6.8 Calculating Visits Per Day](https://dev.mysql.com/doc/refman/8.0/en/calculating-days.html)\n\n\n[MySQL :: MySQL 8.0 Reference Manual :: 12.12 Bit Functions and Operators](https://dev.mysql.com/doc/refman/8.0/en/bit-functions.html)\n\n",
+      "updated": 1703850960000,
+      "body_original": "\n# 题目\n\n\n> **下面的t1表中的数据为用户A的访问记录，请计算每个月的访问的天数。返回 year,month,days 格式。**\n\n\n```sql\nCREATE TABLE t1 (year YEAR, month INT UNSIGNED,\n             day INT UNSIGNED);\nINSERT INTO t1 VALUES(2000,1,1),(2000,1,20),(2000,1,30),(2000,2,2),\n            (2000,2,23),(2000,2,23);\n```\n\n\n正确结果返回应该为：\n\n\n```sql\n+------+-------+------+\n| year | month | days |\n+------+-------+------+\n| 2000 |     1 |    3 |\n| 2000 |     2 |    2 |\n+------+-------+------+\n```\n\n\n## 答案一\n\n\n```sql\nSELECT year,month,BIT_COUNT(BIT_OR(1<<day)) AS days FROM t1 GROUP BY year,month;\n```\n\n\n## 答案二\n\n\n```sql\nSELECT year, month, COUNT(day) AS days FROM (SELECT DISTINCT year,month,day FROM t1) as t2 GROUP BY year, month;\n```\n\n\n# 分析\n\n\n## 我的答案\n\n\n一开始，我想着，先对年月日进行一次去重，因为只需要计算一个月的天数，所以重复的数据是没有用的。\n\n\n```sql\nSELECT DISTINCT year,month,day FROM t1;\n```\n\n\n然后，在上面的结果的基础上，根据年月进行分组计算日的数量。\n\n\n```sql\nSELECT year, month, COUNT(day) AS days FROM (SELECT DISTINCT year,month,day FROM t1) as t2 GROUP BY year, month;\n```\n\n\n## 标准答案\n\n\n```sql\nSELECT year, month, COUNT(day) AS days FROM (SELECT DISTINCT year,month,day FROM t1) as t2 GROUP BY year, month;\n```\n\n\n然而，看了一眼标准答案，惊为天人，用了两个位运算的函数 `BIT_COUNT` 与 `BIT_OR` ，还有左移符号 `<<` 。\n\n\n看第一眼，没看懂了，看第二眼，还是没有看懂。\n\n- `BIT_COUNT` 计算对应的数的二进制中的1的数量，例如\n\n```sql\nmysql> SELECT BIT_COUNT(4); \n+--------------+\n| BIT_COUNT(4) |\n+--------------+\n|            1 |\n+--------------+\n1 row in set (0.00 sec)\n\nmysql> SELECT BIT_COUNT(\"64\");\n+-----------------+\n| BIT_COUNT(\"64\") |\n+-----------------+\n|               1 |\n+-----------------+\n1 row in set (0.00 sec)\n```\n\n- `BIT_OR` 可以理解为按位或，就是对 select出来的字段的值的列表，进行所有按位或操作。\n\n```sql\n可以这样理解，BIT_OR(column) # column 包含 1,3,4,5\n那么最终结果为 1|3|4|5 = 7\n```\n\n\n**继续分析：**\n\n1. `1<<day`：这是一个位左移操作。它将数字1向左移动`day`位。在这里，`day`很可能是一个代表月份中某一天的字段。例如，如果`day`是2，那么`1<<day`的结果是4（二进制中的`100`），这相当于2的`day`次方。\n2. `BIT_OR(1<<day)`：`BIT_OR`是一个聚合函数，它对组内所有行执行位或（bitwise OR）操作。在这个查询中，它将同一个`year`和`month`组内的所有`1<<day`的结果进行位或操作。这样，每个不同的`day`都会在结果中设置一个位。因为每个月的天数是唯一的，所以这个操作最终会产生一个整数，其二进制表示中的位数表示该月中出现的不同天数。【不超过32天，位数不会超过31，可以使用`BIT_OR`】\n3. `BIT_COUNT(BIT_OR(1<<day))`：`BIT_COUNT`函数计算一个数字的二进制表示中1的数量。在这个查询中，它计算上一步`BIT_OR`操作结果中的位数，这个位数就是该月中有记录的不同天数。\n4. `GROUP BY year,month`：这个语句指示MySQL按照年和月来分组记录。对于每个组，上述的位运算将单独执行。\n\n综上所述，这个查询对于每个月份，计算了`t1`表中有记录的不同天数。这种方法特别适用于处理稀疏数据，即不是每一天都有记录的情况。通过位运算，它能高效地对存在记录的天数进行计数，而不需要存储一个完整的日期列表。\n\n\n# 总结\n\n\n位运算的函数还是挺有效的，学习了。\n\n\n[MySQL :: MySQL 8.0 Reference Manual :: 3.6.8 Calculating Visits Per Day](https://dev.mysql.com/doc/refman/8.0/en/calculating-days.html)\n\n\n[MySQL :: MySQL 8.0 Reference Manual :: 12.12 Bit Functions and Operators](https://dev.mysql.com/doc/refman/8.0/en/bit-functions.html)\n\n",
       "properties": {
         "password": "",
         "icon": "",
@@ -4612,7 +4612,7 @@
         "title": "[实践]一道SQL题引发的思考",
         "status": "Published",
         "urlname": "dfa743c9-c01d-435a-9339-c29995b7ca57",
-        "updated": "2023-12-29 11:55:00"
+        "updated": "2023-12-29 11:56:00"
       },
       "catalog": [
         {
@@ -4623,14 +4623,94 @@
       "body": "",
       "realName": "[实践]一道SQL题引发的思考",
       "relativePath": "/技术分享/[实践]一道SQL题引发的思考.md"
+    },
+    {
+      "id": "f5b9b26b-1453-4d4f-bdf9-d82cbe607d92",
+      "doc_id": "f5b9b26b-1453-4d4f-bdf9-d82cbe607d92",
+      "updated": 1703852040000,
+      "body_original": "\n# 整理定义\n\n\n二进制日志（binary log）是一个文件，记录了所有试图更改表数据的语句或行更改。在复制场景中，可以重放二进制日志的内容以使副本保持最新状态，或者在从备份恢复表数据后使数据库保持最新状态。二进制日志功能可以开启或关闭，尽管Oracle建议如果使用复制或执行备份，应始终启用它。\n\n\n您可以使用`mysqlbinlog`命令检查二进制日志的内容，或者在复制或恢复期间重放它。\n\n\n对于MySQL企业备份产品，二进制日志的文件名和文件内当前位置是重要的细节。在复制上下文中进行备份时，您可以指定`--slave-info`选项来记录源的这些信息。\n\n\n在MySQL 5.0之前，有一个类似的功能可用，称为更新日志。在MySQL 5.0及更高版本中，二进制日志取代了更新日志。\n\n\n> **binary log(bin log)**\n\n\n\tA file containing a record of all statements or row changes that attempt to change table data. The contents of the binary log can be replayed to bring replicas up to date in a _**replication**_ scenario, or to bring a database up to date after restoring table data from a backup. The binary logging feature can be turned on and off, although Oracle recommends always enabling it if you use replication or perform backups.\n\tYou can examine the contents of the binary log, or replay it during replication or recovery, by using the [**mysqlbinlog**](https://dev.mysql.com/doc/refman/8.0/en/mysqlbinlog.html) command. For full information about the binary log, see [Section 5.4.4, “The Binary Log”](https://dev.mysql.com/doc/refman/8.0/en/binary-log.html). For MySQL configuration options related to the binary log, see [Section 17.1.6.4, “Binary Logging Options and Variables”](https://dev.mysql.com/doc/refman/8.0/en/replication-options-binary-log.html).\n\tFor the _**MySQL Enterprise Backup**_ product, the file name of the binary log and the current position within the file are important details. To record this information for the source when taking a backup in a replication context, you can specify the `--slave-info` option.\n\tPrior to MySQL 5.0, a similar capability was available, known as the update log. In MySQL 5.0 and higher, the binary log replaces the update log.\n\n\n# 复述展开\n\n\n在这个基础上，我们可以总结一些关于二进制日志的关键点：\n\n1. **重要性**：二进制日志对于数据库的复制和恢复至关重要，它确保了数据的一致性和可恢复性。\n2. **功能**：它记录了所有更改数据库表数据的操作，这些操作可以被重放以同步副本服务器或恢复数据。\n3. **配置**：二进制日志可以通过MySQL的配置选项进行管理，包括启用或禁用日志记录。\n4. **工具**：`mysqlbinlog`工具用于查看和处理二进制日志文件，它是数据库管理员进行故障恢复和数据分析的重要工具。\n5. **备份与复制**：在进行备份和设置复制时，记录二进制日志的当前位置是必要的，这有助于确保数据的一致性和准确的复制。\n6. **历史**：二进制日志取代了之前版本中的更新日志，提供了更加完善和高效的数据变更记录方式。\n7. **版本兼容性**：从MySQL 5.0版本开始，二进制日志成为了标准功能，如果你正在使用更旧的版本，那么升级到新版本后，你会使用二进制日志而不是更新日志。\n8. **性能考量**：虽然二进制日志对于复制和恢复非常有用，但它也可能对性能产生影响，因为记录每个数据更改需要额外的磁盘I/O。因此，对于非复制环境，如果不需要进行点对点的恢复，有时可以考虑关闭二进制日志以提高性能。\n9. **数据安全**：启用二进制日志有助于数据安全，因为即使在系统崩溃的情况下，也可以使用二进制日志恢复到崩溃前的状态。\n10. **监控和审计**：二进制日志可以用于监控数据库的更改，帮助数据库管理员追踪问题和不正常的数据库活动，也可以作为审计的一部分。\n11. **日志管理**：管理二进制日志包括定期清理旧的日志文件，以防止它们占用过多的磁盘空间。这通常通过设置过期策略或手动清理来完成。\n12. **复制策略**：在复制配置中，二进制日志可以用于基于语句的复制（SBR）、基于行的复制（RBR）或两者的混合模式（MIXED），具体取决于复制的需求和环境。\n13. **故障转移和灾难恢复**：在主从复制架构中，如果主服务器发生故障，可以使用二进制日志快速将从服务器提升为新的主服务器，最小化服务中断时间。\n14. **备份策略**：在使用如MySQL企业备份等工具时，二进制日志的信息（如文件名和位置）对于确保备份的完整性和一致性至关重要。\n\n# 理解体会\n\n\nbinary log 是MySQL非常重要的日志文件，用于数据的恢复很重要。\n\n",
+      "properties": {
+        "password": "",
+        "icon": "",
+        "date": "2023-12-29",
+        "type": "Post",
+        "category": "行业概念",
+        "slug": "industry-day98",
+        "tags": [
+          "行业概念",
+          "MySQL"
+        ],
+        "summary": "",
+        "title": "Day98【概念解析】Bin Log",
+        "status": "Published",
+        "urlname": "f5b9b26b-1453-4d4f-bdf9-d82cbe607d92",
+        "updated": "2023-12-29 12:14:00"
+      },
+      "catalog": [
+        {
+          "title": "行业概念",
+          "doc_id": "f5b9b26b-1453-4d4f-bdf9-d82cbe607d92"
+        }
+      ],
+      "body": "",
+      "realName": "Day98【概念解析】Bin Log",
+      "relativePath": "/行业概念/Day98【概念解析】Bin Log.md"
     }
   ],
   "catalog": [
     {
       "object": "page",
+      "id": "f5b9b26b-1453-4d4f-bdf9-d82cbe607d92",
+      "created_time": "2023-12-29T12:12:00.000Z",
+      "last_edited_time": "2023-12-29T12:14:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "730822a3-a39d-4313-aff9-f18324e745dd"
+      },
+      "cover": {
+        "type": "external",
+        "external": {
+          "url": "https://image.kuangyichen.com/image/Bin%20Log.webp"
+        }
+      },
+      "icon": {
+        "type": "emoji",
+        "emoji": "🗒️"
+      },
+      "parent": {
+        "type": "database_id",
+        "database_id": "cd6c4967-e5fe-45d2-976d-5d46736ada90"
+      },
+      "archived": false,
+      "properties": {
+        "password": "",
+        "icon": "",
+        "date": "2023-12-29",
+        "type": "Post",
+        "category": "行业概念",
+        "slug": "industry-day98",
+        "tags": [
+          "行业概念",
+          "MySQL"
+        ],
+        "summary": "",
+        "title": "Day98【概念解析】Bin Log",
+        "status": "Published",
+        "urlname": "f5b9b26b-1453-4d4f-bdf9-d82cbe607d92",
+        "updated": "2023-12-29 12:14:00"
+      },
+      "url": "https://www.notion.so/Day98-Bin-Log-f5b9b26b14534d4fbdf9d82cbe607d92",
+      "public_url": "https://eachenkuang.notion.site/Day98-Bin-Log-f5b9b26b14534d4fbdf9d82cbe607d92"
+    },
+    {
+      "object": "page",
       "id": "dfa743c9-c01d-435a-9339-c29995b7ca57",
       "created_time": "2023-12-29T08:10:00.000Z",
-      "last_edited_time": "2023-12-29T11:55:00.000Z",
+      "last_edited_time": "2023-12-29T11:56:00.000Z",
       "created_by": {
         "object": "user",
         "id": "730822a3-a39d-4313-aff9-f18324e745dd"
@@ -4669,7 +4749,7 @@
         "title": "[实践]一道SQL题引发的思考",
         "status": "Published",
         "urlname": "dfa743c9-c01d-435a-9339-c29995b7ca57",
-        "updated": "2023-12-29 11:55:00"
+        "updated": "2023-12-29 11:56:00"
       },
       "url": "https://www.notion.so/SQL-dfa743c9c01d435a9339c29995b7ca57",
       "public_url": "https://eachenkuang.notion.site/SQL-dfa743c9c01d435a9339c29995b7ca57"
@@ -7674,8 +7754,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/86f96968-f617-4740-a539-e383d7d7f980/jon-tyson-P2aOvMMUJnY-unsplash.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T115542Z&X-Amz-Expires=3600&X-Amz-Signature=0e307d33f1b71adf445bbc4c5426a76b842f3f30656d4bca615fa5ac85597d4d&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-29T12:55:42.807Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/86f96968-f617-4740-a539-e383d7d7f980/jon-tyson-P2aOvMMUJnY-unsplash.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T121502Z&X-Amz-Expires=3600&X-Amz-Signature=4f54b78367b222897ae119cc65a284459ad46abadac4a3253960f5c24edf016c&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-29T13:15:02.079Z"
         }
       },
       "icon": {
@@ -8569,8 +8649,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/85f6c012-2895-49af-99a2-3e005710adbc/cover_%281%29.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T115542Z&X-Amz-Expires=3600&X-Amz-Signature=07d2f612bb363390e8074daec3d2d58a4219a40dd9addf69b0f2326225e6bcaa&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-29T12:55:42.817Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/85f6c012-2895-49af-99a2-3e005710adbc/cover_%281%29.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T121502Z&X-Amz-Expires=3600&X-Amz-Signature=f80151eba657444af8e39e8ca509bc6ee7450665d9942ddb0edf7ce7e1cc48dc&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-29T13:15:02.082Z"
         }
       },
       "icon": {
@@ -10388,8 +10468,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T115543Z&X-Amz-Expires=3600&X-Amz-Signature=3b179561191863b668b2b3865f976402606fe759fee916f35bda174771919225&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-29T12:55:43.078Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T121502Z&X-Amz-Expires=3600&X-Amz-Signature=4c309873f26dadab0bdcad3091f370d74680bd434a5506f88c64b0fd413d84cb&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-29T13:15:02.638Z"
         }
       },
       "icon": {
@@ -10439,8 +10519,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T115543Z&X-Amz-Expires=3600&X-Amz-Signature=3b179561191863b668b2b3865f976402606fe759fee916f35bda174771919225&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-29T12:55:43.086Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T121502Z&X-Amz-Expires=3600&X-Amz-Signature=4c309873f26dadab0bdcad3091f370d74680bd434a5506f88c64b0fd413d84cb&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-29T13:15:02.638Z"
         }
       },
       "icon": {
@@ -10489,8 +10569,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T115543Z&X-Amz-Expires=3600&X-Amz-Signature=3b179561191863b668b2b3865f976402606fe759fee916f35bda174771919225&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-29T12:55:43.079Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T121502Z&X-Amz-Expires=3600&X-Amz-Signature=4c309873f26dadab0bdcad3091f370d74680bd434a5506f88c64b0fd413d84cb&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-29T13:15:02.643Z"
         }
       },
       "icon": {
@@ -10539,8 +10619,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T115543Z&X-Amz-Expires=3600&X-Amz-Signature=3b179561191863b668b2b3865f976402606fe759fee916f35bda174771919225&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-29T12:55:43.079Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T121502Z&X-Amz-Expires=3600&X-Amz-Signature=4c309873f26dadab0bdcad3091f370d74680bd434a5506f88c64b0fd413d84cb&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-29T13:15:02.639Z"
         }
       },
       "icon": {
@@ -10589,8 +10669,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T115543Z&X-Amz-Expires=3600&X-Amz-Signature=3b179561191863b668b2b3865f976402606fe759fee916f35bda174771919225&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-29T12:55:43.086Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T121502Z&X-Amz-Expires=3600&X-Amz-Signature=4c309873f26dadab0bdcad3091f370d74680bd434a5506f88c64b0fd413d84cb&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-29T13:15:02.639Z"
         }
       },
       "icon": {
@@ -10639,8 +10719,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T115543Z&X-Amz-Expires=3600&X-Amz-Signature=3b179561191863b668b2b3865f976402606fe759fee916f35bda174771919225&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-29T12:55:43.087Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T121502Z&X-Amz-Expires=3600&X-Amz-Signature=4c309873f26dadab0bdcad3091f370d74680bd434a5506f88c64b0fd413d84cb&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-29T13:15:02.639Z"
         }
       },
       "icon": {
@@ -10689,8 +10769,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T115543Z&X-Amz-Expires=3600&X-Amz-Signature=3b179561191863b668b2b3865f976402606fe759fee916f35bda174771919225&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-29T12:55:43.080Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T121502Z&X-Amz-Expires=3600&X-Amz-Signature=4c309873f26dadab0bdcad3091f370d74680bd434a5506f88c64b0fd413d84cb&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-29T13:15:02.643Z"
         }
       },
       "icon": {
@@ -10739,8 +10819,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T115543Z&X-Amz-Expires=3600&X-Amz-Signature=3b179561191863b668b2b3865f976402606fe759fee916f35bda174771919225&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-29T12:55:43.087Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T121502Z&X-Amz-Expires=3600&X-Amz-Signature=4c309873f26dadab0bdcad3091f370d74680bd434a5506f88c64b0fd413d84cb&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-29T13:15:02.639Z"
         }
       },
       "icon": {
@@ -10789,8 +10869,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T115543Z&X-Amz-Expires=3600&X-Amz-Signature=3b179561191863b668b2b3865f976402606fe759fee916f35bda174771919225&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-29T12:55:43.088Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T121502Z&X-Amz-Expires=3600&X-Amz-Signature=4c309873f26dadab0bdcad3091f370d74680bd434a5506f88c64b0fd413d84cb&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-29T13:15:02.640Z"
         }
       },
       "icon": {
@@ -10839,8 +10919,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T115543Z&X-Amz-Expires=3600&X-Amz-Signature=3b179561191863b668b2b3865f976402606fe759fee916f35bda174771919225&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-29T12:55:43.088Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T121502Z&X-Amz-Expires=3600&X-Amz-Signature=4c309873f26dadab0bdcad3091f370d74680bd434a5506f88c64b0fd413d84cb&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-29T13:15:02.640Z"
         }
       },
       "icon": {
@@ -10889,8 +10969,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T115543Z&X-Amz-Expires=3600&X-Amz-Signature=3b179561191863b668b2b3865f976402606fe759fee916f35bda174771919225&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-29T12:55:43.088Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T121502Z&X-Amz-Expires=3600&X-Amz-Signature=4c309873f26dadab0bdcad3091f370d74680bd434a5506f88c64b0fd413d84cb&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-29T13:15:02.644Z"
         }
       },
       "icon": {
@@ -10939,8 +11019,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T115543Z&X-Amz-Expires=3600&X-Amz-Signature=3b179561191863b668b2b3865f976402606fe759fee916f35bda174771919225&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-29T12:55:43.080Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/79ccecc8-67ff-4757-b236-a6ae88c27007/%E9%9D%9E%E6%9A%B4%E5%8A%9B%E6%B2%9F%E9%80%9A_%E8%A3%81%E5%89%AA.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T121502Z&X-Amz-Expires=3600&X-Amz-Signature=4c309873f26dadab0bdcad3091f370d74680bd434a5506f88c64b0fd413d84cb&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-29T13:15:02.640Z"
         }
       },
       "icon": {
@@ -11038,8 +11118,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/bfb30b48-50c3-459a-9cb3-a4c5cfb36c1e/mysql-like.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T115543Z&X-Amz-Expires=3600&X-Amz-Signature=ab9f7b597f95041c5be7c5f714a682c1c69a5eaa0e6aa95d3f5cea4eb320b738&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-29T12:55:43.081Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/bfb30b48-50c3-459a-9cb3-a4c5cfb36c1e/mysql-like.webp?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T121502Z&X-Amz-Expires=3600&X-Amz-Signature=c5fa0b66b6e8980d53f83f9c0884c41c9d1dfc6ac04aa2f1317d6f36638b2705&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-29T13:15:02.640Z"
         }
       },
       "icon": {
@@ -11427,8 +11507,8 @@
       "cover": {
         "type": "file",
         "file": {
-          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/33d23e03-f43d-4c01-84ae-9b4733c2aad2/redis.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T115543Z&X-Amz-Expires=3600&X-Amz-Signature=2d1e0b69488c50a62d0a60848c80b8b5165ad031e6f428e192d590d17ebe3cb0&X-Amz-SignedHeaders=host&x-id=GetObject",
-          "expiry_time": "2023-12-29T12:55:43.084Z"
+          "url": "https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/33d23e03-f43d-4c01-84ae-9b4733c2aad2/redis.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231229%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231229T121502Z&X-Amz-Expires=3600&X-Amz-Signature=9f67b7c8bf6df0c8d322f51f55f50a9e4a108a43beecd6bb38f68b2016249416&X-Amz-SignedHeaders=host&x-id=GetObject",
+          "expiry_time": "2023-12-29T13:15:02.642Z"
         }
       },
       "icon": {
