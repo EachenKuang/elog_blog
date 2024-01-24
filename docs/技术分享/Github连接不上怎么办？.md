@@ -11,7 +11,7 @@ summary: ""
 title: Github连接不上怎么办？
 status: Published
 urlname: a3b5727f-b0ee-4ee7-926e-0c1af377edbf
-updated: "2024-01-17 14:39:00"
+updated: "2024-01-18 08:41:00"
 ---
 
 [bookmark](https://segmentfault.com/a/1190000040896781)
