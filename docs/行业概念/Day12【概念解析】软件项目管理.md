@@ -12,9 +12,8 @@ tags:
 summary: ""
 title: Day12【概念解析】软件项目管理
 status: Published
-cover: "https://www.notion.so/images/page-cover/met_paul_signac.jpg"
 urlname: f30b2a8c-884f-4e2d-9e67-aa4342c76fce
-updated: "2023-10-27 19:22:00"
+updated: "2025-02-20 12:17:00"
 ---
 
 # 整理定义
@@ -49,19 +48,6 @@ updated: "2023-10-27 19:22:00"
 > 5. 总结：  
 >    总的来说，软件项目管理是一个关键的领域，它帮助我们更有效地开发和交付高质量的软件。随着技术的发展，软件项目管理也在不断进化，以适应新的挑战和机遇。无论是在大型企业还是在小型创业公司，良好的软件项目管理都是成功的关键。
 
-    **问题：介绍下软件项目管理，按照1、什么是软件项目管理；2、历史发展情况；3、主要内容有哪些；4、为什么出现；5、总结**
-
-    1. 什么是软件项目管理：
-    软件项目管理是一种使用特定的管理技术和方法来计划、组织和控制软件开发过程的活动。它涉及到需求分析、资源分配、时间管理、风险管理、质量控制等多个方面，目标是在预定的时间、预算和质量标准内完成软件项目。
-    2. 历史发展情况：
-    软件项目管理的起源可以追溯到20世纪50年代和60年代，当时计算机技术开始兴起，人们开始意识到需要一种系统的方法来管理复杂的软件开发过程。随着时间的推移，软件项目管理已经发展成为一个成熟的领域，有许多已经被广泛接受的最佳实践，如敏捷开发、Scrum、极限编程等。
-    3. 主要内容有哪些：
-    软件项目管理主要包括以下几个方面：需求管理（明确软件需要做什么），项目计划（确定如何完成这些需求），风险管理（识别和应对可能影响项目的风险），质量管理（确保软件满足预定的质量标准），人力资源管理（组织和管理项目团队），以及沟通管理（确保信息在项目团队和利益相关者之间有效地传递）。
-    4. 为什么出现：
-    软件项目管理之所以出现，主要是因为软件开发是一个复杂的过程，涉及到许多不确定性和风险。没有有效的项目管理，软件项目可能会超出预算，延期，甚至失败。通过使用项目管理的方法和技术，我们可以更好地控制这些风险，提高软件项目的成功率。
-    5. 总结：
-    总的来说，软件项目管理是一个关键的领域，它帮助我们更有效地开发和交付高质量的软件。随着技术的发展，软件项目管理也在不断进化，以适应新的挑战和机遇。无论是在大型企业还是在小型创业公司，良好的软件项目管理都是成功的关键。
-
 # 复述展开
 
 ## 软件项目管理相关的内容
@@ -89,7 +75,7 @@ updated: "2023-10-27 19:22:00"
 
 **关键路径**：关键路径是从项目开始到结束，最早开始时间和最晚开始时间相同的任务序列。
 
-![Untitled.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/fc6289aa-d1a6-4255-8a54-572db6f7ce40/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAT73L2G45HZZMZUHI%2F20231121%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20231121T120614Z&X-Amz-Expires=3600&X-Amz-Signature=6f8b4ec501567614e13e421663a683f99b16313638190e930887df05904c8269&X-Amz-SignedHeaders=host&x-id=GetObject)
+![](https://prod-files-secure.s3.us-west-2.amazonaws.com/dea38628-64dc-40fd-8d17-2efa87e3d554/fc6289aa-d1a6-4255-8a54-572db6f7ce40/Untitled.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIAZI2LB466XFWLPTHS%2F20250220%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20250220T122040Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEJT%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLXdlc3QtMiJIMEYCIQCfv4XHh5b3FVGGB8ysDwsthWQ%2FfSq2zphab%2FAwdoR3eQIhALeYDbZwjVaBCYyw4iUuQkilu%2BQckSxHKlO%2FZ5LitrQ9KogECL3%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQABoMNjM3NDIzMTgzODA1IgwRG2G8kBkXlHht5u8q3AP8ZPph%2BevPKa1Yzaqx3K8jJUbzPD8Ws6WRPfPOWLbCY%2B%2BZtx1Rx56SkKdK15Ca5u3OGz%2BiqMKM9VSXm5NGqhHEny12pRNNZkHv450%2FT%2ByJ0vRs%2Fh%2Fxp2cIm9EW%2FommAKblkNzmtAcgzyqOMw22IGul9DYHt0vgkmK%2FDYdRKB1rFUepZfN0GEayT87MvSxZCg33LE8SEqg3jdaLh8OFf8kwP8gBPpMfU%2BL0LkxgTpV24a7qeDd2d8LhSZ2f8%2FMhtL7zx7HNRMf4nFGZRSe%2Bfy%2B9%2BMf4Gq%2BlHjWhllXTvURW8ZlqFbF%2BPUYF7gt7if3sqBpj%2BkRz5h60xNmIIwjTC6Mg4ein1A3%2FKteYM5aFZJPRwnac1VwukIMfixNKEDrbDegnR5Gc0PQj30emP6eJWrgO4tPrHnH2CtB3O1BBQsKnAegh5Dl3dfnuasufd8DIdKuw9R38Waerb4AHpvRiIH%2B6hD4lLA3dtK6IF8kT0L9i8uKVidHn9N7rcHpFlQePG8d%2BXOGpKG47awQdOtdtPkZxEdM6vmGYdDY9E5Q%2FzKmh5jyev2ETCPCQRoJ8CeFlvF08bzkzyaBeCPpwEu6cgbZ1DNcY2YWQV6I%2Fg4wfhhO6J%2BTy2N0lpu1nJoD6%2FTDsrNy9BjqkAXvRmhN4RMUAI2bdx2cWLHbP27EwGmCc9jYbsGbalL7xBJEiXDh7XCeFJF7hk%2BixrSeXKx%2F5JKbZkUcWc46flW%2BmpvVtk1wS1JbcKUQqyggTSV4NWfsAixZ%2FmOFHMBvOpUMbp97%2FE%2Bp88hfw0umjg4GgY5P7nT%2FwvDK5HqI7YGIeuFopumTTv%2Fu%2FGZiB77fdRtH2YQv8eIfc5M8L1E6dXKeGjIbS&X-Amz-Signature=ee8313e76d12af3b53d645db5c40fe7757cdd8506ec38c1cbba33d731382d462&X-Amz-SignedHeaders=host&x-id=GetObject)
 
 PERT 图不仅给出了每个任务的开始时间、结束时间和完成该任务所需的时间，还给出了任务之间的关系，即哪些任务完成后才能开始另外一些任务，以及如期完成整个工程的关键路 径。图中的松弛时间则反映了完成某些任务时可以推迟其开始时间或延长其所需完成的时间。 但是，PERT 图不能反映任务之间的并行关系。
 
@@ -115,176 +101,320 @@ PERT 图不仅给出了每个任务的开始时间、结束时间和完成该任
 
 2、在软件工程中，项目管理也是一个非常关键的领域，在软件开发过程中，需要有一个项目经理（Project Manager）也就是 PM 来对整个开发流程进行管理，保障项目能够在预期过程中完成。PM 在团队中的话语权还是比较大的，因为 TA 需要对整个项目的进度进行把控和负责，TA 可以按照既定的计划进行人员、项目、过程、产品进行调整。例如，如果项目遇到难点，PM 就可以调整人力来进行攻克；如果在开发过程中，面临延期的问题，那么 PM 有权在中期进行人员的增加或者通过加班的方式来加快进度。
 
-> 📌 **快速跳转链接**  
-> 【概念解析】启动
+> 📌 **快速跳转链接**
 >
-> 【概念解析】Day 1 - 10
->
-> 【概念解析】Day 11 - 20
->
-> 【概念解析】Day 21 - 30
->
-> 【概念解析】Day 31 - 40
->
-> 【概念解析】Day 41 - 50
->
-> 【概念解析】Day 51 - 60
->
-> 【概念解析】Day 61 - 70
-
-<details>
-<summary>【概念解析】启动</summary>
-
-[bookmark](https://kuangyichen.com/article/industry)
-
-[bookmark](https://kuangyichen.com/article/start-industry-100-words)
-
-</details>
-
-<details>
-<summary>【概念解析】Day 1 - 10</summary>
-
-[bookmark](https://kuangyichen.com/article/industry-day1)
-
-[bookmark](https://kuangyichen.com/article/industry-day2)
-
-[bookmark](https://kuangyichen.com/article/industry-day3)
-
-[bookmark](https://kuangyichen.com/article/industry-day4)
-
-[bookmark](https://kuangyichen.com/article/industry-day5)
-
-[bookmark](https://kuangyichen.com/article/industry-day6)
-
-[bookmark](https://kuangyichen.com/article/industry-day7)
-
-[bookmark](https://kuangyichen.com/article/industry-day8)
-
-[bookmark](https://kuangyichen.com/article/industry-day9)
-
-[bookmark](https://kuangyichen.com/article/industry-day10)
-
-</details>
-
-<details>
-<summary>【概念解析】Day 11 - 20</summary>
-
-[bookmark](https://kuangyichen.com/article/industry-day11)
-
-[bookmark](https://kuangyichen.com/article/industry-day12)
-
-[bookmark](https://kuangyichen.com/article/industry-day13)
-
-[bookmark](https://kuangyichen.com/article/industry-day14)
-
-[bookmark](https://kuangyichen.com/article/industry-day15)
-
-[bookmark](https://kuangyichen.com/article/industry-day16)
-
-[bookmark](https://kuangyichen.com/article/industry-day17)
-
-[bookmark](https://kuangyichen.com/article/industry-day18)
-
-[bookmark](https://kuangyichen.com/article/industry-day19)
-
-[bookmark](https://kuangyichen.com/article/industry-day20)
-
-</details>
-
-<details>
-<summary>【概念解析】Day 21 - 30</summary>
-
-[bookmark](https://kuangyichen.com/article/industry-day21)
-
-[bookmark](https://kuangyichen.com/article/industry-day22)
-
-[bookmark](https://kuangyichen.com/article/industry-day23)
-
-[bookmark](https://kuangyichen.com/article/industry-day24)
-
-[bookmark](https://kuangyichen.com/article/industry-day25)
-
-[bookmark](https://kuangyichen.com/article/industry-day26)
-
-[bookmark](https://kuangyichen.com/article/industry-day27)
-
-[bookmark](https://kuangyichen.com/article/industry-day28)
-
-[bookmark](https://kuangyichen.com/article/industry-day29)
-
-[bookmark](https://kuangyichen.com/article/industry-day30)
-
-</details>
-
-<details>
-<summary>【概念解析】Day 31 - 40</summary>
-
-[bookmark](https://kuangyichen.com/article/industry-day31)
-
-[bookmark](https://kuangyichen.com/article/industry-day32)
-
-[bookmark](https://kuangyichen.com/article/industry-day33)
-
-[bookmark](https://kuangyichen.com/article/industry-day34)
-
-[bookmark](https://kuangyichen.com/article/industry-day35)
-
-[bookmark](https://kuangyichen.com/article/industry-day36)
-
-[bookmark](https://kuangyichen.com/article/industry-day37)
-
-[bookmark](https://kuangyichen.com/article/industry-day38)
-
-[bookmark](https://kuangyichen.com/article/industry-day39)
-
-[bookmark](https://kuangyichen.com/article/industry-day40)
-
-</details>
-
-<details>
-<summary>【概念解析】Day 41 - 50</summary>
-
-[bookmark](https://kuangyichen.com/article/industry-day41)
-
-[bookmark](https://kuangyichen.com/article/industry-day42)
-
-[bookmark](https://kuangyichen.com/article/industry-day43)
-
-[bookmark](https://kuangyichen.com/article/industry-day44)
-
-[bookmark](https://kuangyichen.com/article/industry-day45)
-
-[bookmark](https://kuangyichen.com/article/industry-day46)
-
-[bookmark](https://kuangyichen.com/article/industry-day47)
-
-[bookmark](https://kuangyichen.com/article/industry-day48)
-
-[bookmark](https://kuangyichen.com/article/industry-day49)
-
-[bookmark](https://kuangyichen.com/article/industry-day50)
-
-</details>
-
-<details>
-<summary>【概念解析】Day 51 - 60</summary>
-
-[bookmark](https://kuangyichen.com/article/industry-day51)
-
-[bookmark](https://kuangyichen.com/article/industry-day52)
-
-[bookmark](https://kuangyichen.com/article/industry-day53)
-
-[bookmark](https://kuangyichen.com/article/industry-day54)
-
-[bookmark](https://kuangyichen.com/article/industry-day55)
-
-[bookmark](https://kuangyichen.com/article/industry-day56)
-
-[bookmark](https://kuangyichen.com/article/industry-day57)
-
-[bookmark](https://kuangyichen.com/article/industry-day58)
-
-[bookmark](https://kuangyichen.com/article/industry-day59)
-
-</details>
+> <details>  
+>   <summary>【概念解析】启动</summary>  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/start-industry-100-words)  
+>   
+>   
+>   
+>   </details>  
+>   
+> <details>  
+>   <summary>【概念解析】Day 1 - 10</summary>  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day1)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day2)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day3)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day4)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day5)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day6)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day7)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day8)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day9)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day10)  
+>   
+>   
+>   
+>   </details>  
+>   
+> <details>  
+>   <summary>【概念解析】Day 11 - 20</summary>  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day11)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day12)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day13)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day14)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day15)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day16)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day17)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day18)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day19)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day20)  
+>   
+>   
+>   
+>   </details>  
+>   
+> <details>  
+>   <summary>【概念解析】Day 21 - 30</summary>  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day21)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day22)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day23)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day24)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day25)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day26)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day27)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day28)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day29)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day30)  
+>   
+>   
+>   
+>   </details>  
+>   
+> <details>  
+>   <summary>【概念解析】Day 31 - 40</summary>  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day31)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day32)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day33)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day34)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day35)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day36)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day37)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day38)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day39)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day40)  
+>   
+>   
+>   
+>   </details>  
+>   
+> <details>  
+>   <summary>【概念解析】Day 41 - 50</summary>  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day41)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day42)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day43)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day44)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day45)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day46)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day47)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day48)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day49)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day50)  
+>   
+>   
+>   
+>   </details>  
+>   
+> <details>  
+>   <summary>【概念解析】Day 51 - 60</summary>  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day51)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day52)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day53)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day54)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day55)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day56)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day57)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day58)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day59)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day60)  
+>   
+>   
+>   
+>   </details>  
+>   
+> <details>  
+>   <summary>【概念解析】Day 61 - 70</summary>  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day61)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day62)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day63)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day64)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day65)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day66)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day67)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day68)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day69)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day70)  
+>   
+>   
+>   
+>   </details>  
+>   
+> <details>  
+>   <summary>【概念解析】Day 71 - 80</summary>  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day71)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day72)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day73)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day74)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day75)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day76)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day77)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day78)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day79)  
+>   
+>   
+> [bookmark](https://kuangyichen.com/article/industry-day80)  
+>   
+>   
+>   
+>   </details>  
+>   
+> <details>  
+>   <summary>【概念解析】Day 81 - 90</summary>  
+>   
+>   
+>   
+>   </details>
