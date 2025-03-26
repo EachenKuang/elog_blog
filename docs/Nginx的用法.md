@@ -8,9 +8,9 @@ slug: ""
 tags: []
 summary: ""
 title: Nginx的用法
-status: Published
+status: Draft
 urlname: fabcf1a5-9686-4a46-80e6-2fc417f52d76
-updated: "2025-02-20 12:38:00"
+updated: "2025-02-20 12:45:00"
 ---
 
 > 😀 这里写文章的前言：  
